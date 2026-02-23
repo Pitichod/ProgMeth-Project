@@ -1,0 +1,74 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+group = 'progmeth_2025_1'
+version = '1'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.openjfx:javafx-controls:17.0.10'
+    implementation 'org.openjfx:javafx-fxml:17.0.10'
+    implementation 'org.openjfx:javafx-web:17.0.10'
+    implementation 'org.openjfx:javafx-graphics:17.0.10'
+    implementation 'org.openjfx:javafx-media:17.0.10'
+    implementation 'org.openjfx:javafx-swing:17.0.10'
+
+    // TestFX dependencies
+    testImplementation 'org.testfx:testfx-core:4.0.17'
+    testImplementation 'org.testfx:testfx-junit5:4.0.17'
+    testImplementation 'org.hamcrest:hamcrest:2.2'
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+javafx {
+    version = '17.0.10'
+    modules = ['javafx.controls', 'javafx.fxml', 'javafx.graphics', 'javafx.media', 'javafx.web', 'javafx.swing']
+}
+
+application {
+    mainClass = 'application.Main' // path to your main class
+}
+
+run {
+    standardInput = System.in
+}
+
+test {
+    useJUnitPlatform()
+
+    // TestFX configuration for JavaFX 24
+    systemProperty 'testfx.robot', 'glass'
+    systemProperty 'testfx.setup.timeout', '60000'
+    systemProperty 'testfx.launch.timeout', '60000'
+}
+
+// Configure the JAR task to include source code
+jar {
+    // Set duplicate handling strategy
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    // Include compiled classes (default behavior)
+    from sourceSets.main.output
+
+    // Include source code
+    from sourceSets.main.allSource
+
+    // Make it executable by setting the main class
+    manifest {
+        attributes(
+                'Main-Class': application.mainClass.get()
+                //'Class-Path': configurations.runtimeClasspath.collect { it.getName() }.join(' ')
+        )
+    }
+
+    // Set archive name
+    archiveFileName = "${project.name}-${project.version}-with-sources.jar"
+}
