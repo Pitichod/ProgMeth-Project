@@ -39,7 +39,7 @@ public class RewardScreen {
     public Scene createScene() {
         Label titleLabel = new Label("Level " + currentLevelNumber + " Clear!");
         titleLabel.setFont(Font.font("System", 64));
-        titleLabel.setTextFill(Color.web("#3b5ce4"));
+        titleLabel.setTextFill(Color.WHITE);
 
         VBox rewardBox = new VBox(20);
         rewardBox.setAlignment(Pos.CENTER);
@@ -47,6 +47,7 @@ public class RewardScreen {
 
         Label rewardTitleLabel = new Label("Rewards Unlocked:");
         rewardTitleLabel.setFont(Font.font("System", 32));
+        rewardTitleLabel.setTextFill(Color.WHITE);
 
         HBox rewardImagesBox = new HBox(20);
         rewardImagesBox.setAlignment(Pos.CENTER);
@@ -66,7 +67,7 @@ public class RewardScreen {
         Button nextButton = new Button(currentLevelNumber < 5 ? "Next Level" : "Final Reward!");
         nextButton.setFont(Font.font(32));
         nextButton.setPrefWidth(300);
-        nextButton.setStyle("-fx-background-color: #3b5ce4; -fx-text-fill: white; -fx-background-radius: 20;");
+        nextButton.setStyle("-fx-background-color: #000000; -fx-text-fill: white; -fx-background-radius: 20; -fx-border-color: white; -fx-border-width: 2;");
         nextButton.setOnAction(e -> {
             if (onNextLevel != null) {
                 onNextLevel.run();
@@ -76,7 +77,8 @@ public class RewardScreen {
         Button menuButton = new Button("Main Menu");
         menuButton.setFont(Font.font(32));
         menuButton.setPrefWidth(300);
-        menuButton.setStyle("-fx-background-color: #ECEFD1; -fx-background-radius: 20; -fx-border-color: black; -fx-border-width: 2;");
+        menuButton.setTextFill(Color.WHITE);
+        menuButton.setStyle("-fx-background-color: #000000; -fx-background-radius: 20; -fx-border-color: white; -fx-border-width: 2;");
         menuButton.setOnAction(e -> {
             if (onMainMenu != null) {
                 onMainMenu.run();
@@ -88,7 +90,7 @@ public class RewardScreen {
         VBox root = new VBox(40, titleLabel, rewardBox, buttonBox);
         root.setAlignment(Pos.TOP_CENTER);
         root.setPadding(new Insets(40));
-        root.setStyle("-fx-background-color: #e8e8e8;");
+        root.setStyle("-fx-background-color: #000000;");
 
         return new Scene(root, 1200, 700);
     }
@@ -105,7 +107,7 @@ public class RewardScreen {
 
         StackPane imageBox = new StackPane();
         imageBox.setPrefSize(120, 120);
-        imageBox.setStyle("-fx-border-color: black; -fx-border-width: 3; -fx-background-color: #f0f0f0; -fx-border-radius: 10;");
+        imageBox.setStyle("-fx-border-color: white; -fx-border-width: 3; -fx-background-color: #000000; -fx-border-radius: 10;");
 
         if (imagePath != null) {
             Image rewardImage = ImageLoader.loadImage(imagePath, 120, 120);
@@ -114,12 +116,14 @@ public class RewardScreen {
             } else {
                 Label fallback = new Label(reward.getName().substring(0, 1));
                 fallback.setFont(Font.font(32));
+                fallback.setTextFill(Color.WHITE);
                 imageBox.getChildren().add(fallback);
             }
         }
 
         Label rewardName = new Label(reward.getName());
         rewardName.setFont(Font.font(18));
+        rewardName.setTextFill(Color.WHITE);
         rewardName.setWrapText(true);
         rewardName.setMaxWidth(140);
         rewardName.setAlignment(Pos.CENTER);

@@ -61,16 +61,23 @@ public class GameApp extends Application {
         Label title = new Label("Born Again\nBecome CEDT Student");
         title.setFont(Font.font("System", 64));
         title.setAlignment(Pos.CENTER);
+        title.setTextFill(Color.WHITE);
 
-        Button startButton = createMainButton("Start");
-        startButton.setOnAction(e -> showLevelSelectScene());
+        Button newGameButton = createMainButton("New Game");
+        newGameButton.setOnAction(e -> startGameWithLevel(1));
 
-        Button howToPlayButton = createMainButton("How to play");
+        Button chapterSelectButton = createMainButton("Chapter Select");
+        chapterSelectButton.setOnAction(e -> showLevelSelectScene());
+
+        Button howToPlayButton = createMainButton("How to Play");
         howToPlayButton.setOnAction(e -> showHowToPlayScene());
 
-        VBox root = new VBox(18, title, startButton, howToPlayButton);
+        Button exitButton = createMainButton("Exit");
+        exitButton.setOnAction(e -> stage.close());
+
+        VBox root = new VBox(18, title, newGameButton, chapterSelectButton, howToPlayButton, exitButton);
         root.setAlignment(Pos.CENTER);
-        root.setStyle("-fx-background-color: #e8e8e8;");
+        root.setStyle("-fx-background-color: #000000;");
 
         Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         stage.setScene(scene);
@@ -79,6 +86,7 @@ public class GameApp extends Application {
     private void showHowToPlayScene() {
         Label title = new Label("How to play");
         title.setFont(Font.font("System", 56));
+        title.setTextFill(Color.WHITE);
 
         GridPane cardsGrid = new GridPane();
         cardsGrid.setHgap(26);
@@ -94,7 +102,7 @@ public class GameApp extends Application {
         VBox root = new VBox(24, title, cardsGrid, backButton);
         root.setAlignment(Pos.TOP_CENTER);
         root.setPadding(new Insets(24));
-        root.setStyle("-fx-background-color: #e8e8e8;");
+        root.setStyle("-fx-background-color: #000000;");
 
         Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         stage.setScene(scene);
@@ -103,6 +111,7 @@ public class GameApp extends Application {
     private void showLevelSelectScene() {
         Label title = new Label("Select Level");
         title.setFont(Font.font("System", 56));
+        title.setTextFill(Color.WHITE);
 
         GridPane levelGrid = new GridPane();
         levelGrid.setHgap(20);
@@ -111,7 +120,7 @@ public class GameApp extends Application {
         for (int i = 1; i <= 5; i++) {
             final int levelNum = i;
             Button levelButton = new Button("Level " + i);
-            levelButton.setStyle("-fx-font-size: 24; -fx-padding: 20; -fx-background-color: #ECEFD1; -fx-border-color: black; -fx-border-width: 2; -fx-border-radius: 10;");
+            levelButton.setStyle("-fx-font-size: 24; -fx-padding: 20; -fx-background-color: #000000; -fx-text-fill: white; -fx-border-color: white; -fx-border-width: 2; -fx-border-radius: 10;");
             levelButton.setPrefWidth(200);
             levelButton.setPrefHeight(100);
             levelButton.setOnAction(e -> startGameWithLevel(levelNum));
@@ -124,7 +133,7 @@ public class GameApp extends Application {
         VBox root = new VBox(20, title, levelGrid, backButton);
         root.setAlignment(Pos.TOP_CENTER);
         root.setPadding(new Insets(20));
-        root.setStyle("-fx-background-color: #e8e8e8;");
+        root.setStyle("-fx-background-color: #000000;");
 
         Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         stage.setScene(scene);
@@ -147,15 +156,17 @@ public class GameApp extends Application {
         Rectangle imageBox = new Rectangle(320, 140);
         imageBox.setArcWidth(40);
         imageBox.setArcHeight(40);
-        imageBox.setFill(Color.web("#ECEFD1"));
-        imageBox.setStroke(Color.BLACK);
+        imageBox.setFill(Color.BLACK);
+        imageBox.setStroke(Color.WHITE);
         imageBox.setStrokeWidth(2);
 
         Label headingLabel = new Label(heading);
         headingLabel.setFont(Font.font(28));
+        headingLabel.setTextFill(Color.WHITE);
 
         Label textLabel = new Label(text);
         textLabel.setFont(Font.font(20));
+        textLabel.setTextFill(Color.WHITE);
 
         VBox card = new VBox(10, imageBox, headingLabel, textLabel);
         card.setPrefWidth(360);
@@ -166,7 +177,8 @@ public class GameApp extends Application {
         Button button = new Button(text);
         button.setFont(Font.font(48));
         button.setPrefWidth(400);
-        button.setStyle("-fx-background-color: #ECEFD1; -fx-background-radius: 40; -fx-border-radius: 40; -fx-border-color: black; -fx-border-width: 2;");
+        button.setTextFill(Color.WHITE);
+        button.setStyle("-fx-background-color: #000000; -fx-background-radius: 40; -fx-border-radius: 40; -fx-border-color: white; -fx-border-width: 2;");
         return button;
     }
 
@@ -197,12 +209,16 @@ public class GameApp extends Application {
 
         statusLabel.setFont(Font.font(22));
         statusLabel.setPadding(new Insets(4, 22, 12, 22));
+        hpLabel.setTextFill(Color.WHITE);
+        staminaLabel.setTextFill(Color.WHITE);
+        levelLabel.setTextFill(Color.WHITE);
+        statusLabel.setTextFill(Color.WHITE);
 
         BorderPane root = new BorderPane();
         root.setTop(topHud);
         root.setCenter(boardPane);
         root.setBottom(statusLabel);
-        root.setStyle("-fx-background-color: #e8e8e8;");
+        root.setStyle("-fx-background-color: #000000;");
 
         Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         scene.setOnKeyPressed(event -> {
@@ -237,6 +253,7 @@ public class GameApp extends Application {
     private HBox createHudRow(String icon, ProgressBar bar, Label text) {
         Label iconLabel = new Label(icon);
         iconLabel.setFont(Font.font(26));
+        iconLabel.setTextFill(Color.WHITE);
 
         text.setFont(Font.font(28));
 
@@ -262,7 +279,7 @@ public class GameApp extends Application {
 
     private void drawBoard() {
         GraphicsContext g = gameCanvas.getGraphicsContext2D();
-        g.setFill(Color.web("#e8e8e8"));
+        g.setFill(Color.BLACK);
         g.fillRect(0, 0, gameCanvas.getWidth(), gameCanvas.getHeight());
 
         GameBoard board = engine.getBoard();
@@ -401,10 +418,18 @@ public class GameApp extends Application {
         };
 
         if (imagePath != null) {
-            Image humanImage = ImageLoader.loadImage(imagePath, TILE, TILE);
+            Image humanImage = ImageLoader.loadImage(imagePath);
             if (humanImage != null) {
-                g.drawImage(humanImage, x, y, TILE, TILE);
-                return;
+                double imageWidth = humanImage.getWidth();
+                double imageHeight = humanImage.getHeight();
+                if (imageWidth > 0 && imageHeight > 0) {
+                    double targetHeight = TILE * 1.25;
+                    double targetWidth = targetHeight * (imageWidth / imageHeight);
+                    double drawX = x + (TILE - targetWidth) / 2.0;
+                    double drawY = y + TILE - targetHeight;
+                    g.drawImage(humanImage, drawX, drawY, targetWidth, targetHeight);
+                    return;
+                }
             }
         }
 
@@ -453,11 +478,12 @@ public class GameApp extends Application {
     private void showGameCompletionScene() {
         Label titleLabel = new Label("Congratulations!");
         titleLabel.setFont(Font.font("System", 72));
-        titleLabel.setTextFill(Color.web("#3b5ce4"));
+        titleLabel.setTextFill(Color.WHITE);
 
         Label messageLabel = new Label("You have completed all levels!\nYou are now a true CEDT member!");
         messageLabel.setFont(Font.font("System", 36));
         messageLabel.setAlignment(Pos.CENTER);
+        messageLabel.setTextFill(Color.WHITE);
 
         VBox rewardDisplay = new VBox(20);
         rewardDisplay.setAlignment(Pos.CENTER);
@@ -465,15 +491,18 @@ public class GameApp extends Application {
 
         Label rewardLabel = new Label("Final Reward Collection:");
         rewardLabel.setFont(Font.font("System", 32));
+        rewardLabel.setTextFill(Color.WHITE);
 
         HBox rewardsBox = new HBox(30);
         rewardsBox.setAlignment(Pos.CENTER);
         for (Reward reward : session.getCollectedRewards()) {
+            Label rewardName = new Label(reward.getName());
+            rewardName.setTextFill(Color.WHITE);
             VBox rewardItem = new VBox(10, 
-                new Label(reward.getName()));
+                rewardName);
             rewardItem.setAlignment(Pos.CENTER);
             rewardItem.setPadding(new Insets(10));
-            rewardItem.setStyle("-fx-border-color: black; -fx-border-radius: 10; -fx-padding: 10;");
+            rewardItem.setStyle("-fx-border-color: white; -fx-border-radius: 10; -fx-padding: 10;");
             rewardsBox.getChildren().add(rewardItem);
         }
 
@@ -482,13 +511,14 @@ public class GameApp extends Application {
         Button menuButton = new Button("Back to Menu");
         menuButton.setFont(Font.font(32));
         menuButton.setPrefWidth(300);
-        menuButton.setStyle("-fx-background-color: #ECEFD1; -fx-background-radius: 20; -fx-border-color: black; -fx-border-width: 2;");
+        menuButton.setTextFill(Color.WHITE);
+        menuButton.setStyle("-fx-background-color: #000000; -fx-background-radius: 20; -fx-border-color: white; -fx-border-width: 2;");
         menuButton.setOnAction(e -> showStartScene());
 
         VBox root = new VBox(40, titleLabel, messageLabel, rewardDisplay, menuButton);
         root.setAlignment(Pos.TOP_CENTER);
         root.setPadding(new Insets(40));
-        root.setStyle("-fx-background-color: #e8e8e8;");
+        root.setStyle("-fx-background-color: #000000;");
 
         Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         stage.setScene(scene);
@@ -506,10 +536,19 @@ public class GameApp extends Application {
         };
 
         String imagePath = "/images/People/Player" + directionSuffix;
-        Image playerImage = ImageLoader.loadImage(imagePath, TILE, TILE);
+        Image playerImage = ImageLoader.loadImage(imagePath);
 
         if (playerImage != null) {
-            g.drawImage(playerImage, x, y, TILE, TILE);
+            double imageWidth = playerImage.getWidth();
+            double imageHeight = playerImage.getHeight();
+            if (imageWidth > 0 && imageHeight > 0) {
+                double targetHeight = TILE * 1.25;
+                double targetWidth = targetHeight * (imageWidth / imageHeight);
+                double drawX = x + (TILE - targetWidth) / 2.0;
+                double drawY = y + TILE - targetHeight;
+                g.drawImage(playerImage, drawX, drawY, targetWidth, targetHeight);
+                return;
+            }
         } else {
             g.setFill(Color.web("#3b5ce4"));
             g.fillRoundRect(x + 8, y + 8, TILE - 16, TILE - 16, 18, 18);
