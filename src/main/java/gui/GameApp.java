@@ -1,5 +1,6 @@
 package gui;
 
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -36,6 +37,7 @@ public class GameApp extends Application {
     private static final int WINDOW_WIDTH = 1200;
     private static final int WINDOW_HEIGHT = 700;
     private static final int TILE = 64;
+    private static final int HUMAN_REACTION_RANGE = 1;
 
     private Stage stage;
     private GameEngine engine;
@@ -48,6 +50,8 @@ public class GameApp extends Application {
     private ProgressBar hpBar;
     private ProgressBar staminaBar;
     private Canvas gameCanvas;
+    private AnimationTimer renderTimer;
+    private long animationStartNanos;
 
     @Override
     public void start(Stage primaryStage) {
@@ -58,6 +62,8 @@ public class GameApp extends Application {
     }
 
     private void showStartScene() {
+        stopRenderLoop();
+
         Label title = new Label("Born Again\nBecome CEDT Student");
         title.setFont(Font.font("System", 64));
         title.setAlignment(Pos.CENTER);
@@ -84,6 +90,8 @@ public class GameApp extends Application {
     }
 
     private void showHowToPlayScene() {
+        stopRenderLoop();
+
         Label title = new Label("How to play");
         title.setFont(Font.font("System", 56));
         title.setTextFill(Color.WHITE);
@@ -109,6 +117,8 @@ public class GameApp extends Application {
     }
 
     private void showLevelSelectScene() {
+        stopRenderLoop();
+
         Label title = new Label("Select Level");
         title.setFont(Font.font("System", 56));
         title.setTextFill(Color.WHITE);
@@ -183,7 +193,9 @@ public class GameApp extends Application {
     }
 
     private void showGameScene(LevelId levelId) {
+        stopRenderLoop();
         engine = new GameEngine(session, levelId);
+        animationStartNanos = System.nanoTime();
 
         hpBar = new ProgressBar(1.0);
         staminaBar = new ProgressBar(1.0);
@@ -246,8 +258,26 @@ public class GameApp extends Application {
 
         stage.setScene(scene);
         refreshGameView();
+        startRenderLoop();
         gameCanvas.setFocusTraversable(true);
         gameCanvas.requestFocus();
+    }
+
+    private void startRenderLoop() {
+        renderTimer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                drawBoard();
+            }
+        };
+        renderTimer.start();
+    }
+
+    private void stopRenderLoop() {
+        if (renderTimer != null) {
+            renderTimer.stop();
+            renderTimer = null;
+        }
     }
 
     private HBox createHudRow(String icon, ProgressBar bar, Label text) {
@@ -326,13 +356,22 @@ public class GameApp extends Application {
             }
         }
 
+        int playerX = engine.getPlayer().getX();
+        int playerY = engine.getPlayer().getY();
+
         for (Human human : board.getHumans()) {
-            if (human.isActive()) {
+            if (human.isActive() && human.getY() < playerY) {
                 drawHuman(g, originX, originY, human.getX(), human.getY(), human.getName());
             }
         }
 
-        drawPlayer(g, originX, originY, engine.getPlayer().getX(), engine.getPlayer().getY());
+        drawPlayer(g, originX, originY, playerX, playerY);
+
+        for (Human human : board.getHumans()) {
+            if (human.isActive() && human.getY() >= playerY) {
+                drawHuman(g, originX, originY, human.getX(), human.getY(), human.getName());
+            }
+        }
     }
 
     private void drawObstacle(GraphicsContext g, double originX, double originY, Chair obstacle) {
@@ -408,14 +447,9 @@ public class GameApp extends Application {
     private void drawHuman(GraphicsContext g, double originX, double originY, int gridX, int gridY, String name) {
         double x = originX + gridX * TILE;
         double y = originY + gridY * TILE;
+        double bobOffset = getIdleBobOffset(gridX, gridY);
 
-        String imagePath = switch (name) {
-            case "Introvert" -> "/images/People/Introvert-Front.png";
-            case "Extrovert" -> "/images/People/Extrovert-Front.png";
-            case "TA" -> "/images/People/TA-Front.png";
-            case "Teacher" -> "/images/People/ArJarn-Front.png";
-            default -> null;
-        };
+        String imagePath = getHumanImagePath(name, gridX, gridY);
 
         if (imagePath != null) {
             Image humanImage = ImageLoader.loadImage(imagePath);
@@ -426,7 +460,7 @@ public class GameApp extends Application {
                     double targetHeight = TILE * 1.25;
                     double targetWidth = targetHeight * (imageWidth / imageHeight);
                     double drawX = x + (TILE - targetWidth) / 2.0;
-                    double drawY = y + TILE - targetHeight;
+                    double drawY = y + TILE - targetHeight + bobOffset;
                     g.drawImage(humanImage, drawX, drawY, targetWidth, targetHeight);
                     return;
                 }
@@ -434,9 +468,9 @@ public class GameApp extends Application {
         }
 
         g.setFill(Color.web("#f57c2f"));
-        g.fillOval(x + 10, y + 10, TILE - 20, TILE - 20);
+        g.fillOval(x + 10, y + 10 + bobOffset, TILE - 20, TILE - 20);
         g.setStroke(Color.BLACK);
-        g.strokeOval(x + 10, y + 10, TILE - 20, TILE - 20);
+        g.strokeOval(x + 10, y + 10 + bobOffset, TILE - 20, TILE - 20);
 
         g.setFill(Color.BLACK);
         String token = switch (name) {
@@ -446,10 +480,55 @@ public class GameApp extends Application {
             case "Teacher" -> "R";
             default -> "H";
         };
-        g.fillText(token, x + 28, y + 38);
+        g.fillText(token, x + 28, y + 38 + bobOffset);
+    }
+
+    private String getHumanImagePath(String name, int humanX, int humanY) {
+        String humanPrefix = switch (name) {
+            case "Introvert" -> "Introvert";
+            case "Extrovert" -> "Extrovert";
+            case "TA" -> "TA";
+            case "Teacher" -> "ArJarn";
+            default -> null;
+        };
+
+        if (humanPrefix == null) {
+            return null;
+        }
+
+        Direction facing = getHumanFacingDirection(humanX, humanY);
+        String suffix = switch (facing) {
+            case UP -> "-Back.png";
+            case DOWN -> "-Front.png";
+            case LEFT -> "-Left.png";
+            case RIGHT -> "-Right.png";
+        };
+
+        return "/images/People/" + humanPrefix + suffix;
+    }
+
+    private Direction getHumanFacingDirection(int humanX, int humanY) {
+        int playerX = engine.getPlayer().getX();
+        int playerY = engine.getPlayer().getY();
+
+        int dx = playerX - humanX;
+        int dy = playerY - humanY;
+        int distance = Math.abs(dx) + Math.abs(dy);
+
+        if (distance == 0 || distance > HUMAN_REACTION_RANGE) {
+            return Direction.DOWN;
+        }
+
+        if (Math.abs(dx) > Math.abs(dy)) {
+            return dx > 0 ? Direction.RIGHT : Direction.LEFT;
+        }
+
+        return dy > 0 ? Direction.DOWN : Direction.UP;
     }
 
     private void showRewardScreen() {
+        stopRenderLoop();
+
         int currentLevel = switch (engine.getLevelLabel()) {
             case "LEVEL 1 (ISCALE 401)" -> 1;
             case "LEVEL 2 (ISCALE 402)" -> 2;
@@ -476,6 +555,8 @@ public class GameApp extends Application {
     }
 
     private void showGameCompletionScene() {
+        stopRenderLoop();
+
         Label titleLabel = new Label("Congratulations!");
         titleLabel.setFont(Font.font("System", 72));
         titleLabel.setTextFill(Color.WHITE);
@@ -527,6 +608,7 @@ public class GameApp extends Application {
     private void drawPlayer(GraphicsContext g, double originX, double originY, int gridX, int gridY) {
         double x = originX + gridX * TILE;
         double y = originY + gridY * TILE;
+        double bobOffset = getIdleBobOffset(gridX, gridY);
 
         String directionSuffix = switch (engine.getPlayer().getLastDirection()) {
             case UP -> "-Back.png";
@@ -545,17 +627,23 @@ public class GameApp extends Application {
                 double targetHeight = TILE * 1.25;
                 double targetWidth = targetHeight * (imageWidth / imageHeight);
                 double drawX = x + (TILE - targetWidth) / 2.0;
-                double drawY = y + TILE - targetHeight;
+                double drawY = y + TILE - targetHeight + bobOffset;
                 g.drawImage(playerImage, drawX, drawY, targetWidth, targetHeight);
                 return;
             }
         } else {
             g.setFill(Color.web("#3b5ce4"));
-            g.fillRoundRect(x + 8, y + 8, TILE - 16, TILE - 16, 18, 18);
+            g.fillRoundRect(x + 8, y + 8 + bobOffset, TILE - 16, TILE - 16, 18, 18);
             g.setStroke(Color.BLACK);
-            g.strokeRoundRect(x + 8, y + 8, TILE - 16, TILE - 16, 18, 18);
+            g.strokeRoundRect(x + 8, y + 8 + bobOffset, TILE - 16, TILE - 16, 18, 18);
             g.setFill(Color.WHITE);
-            g.fillText("P", x + 28, y + 38);
+            g.fillText("P", x + 28, y + 38 + bobOffset);
         }
+    }
+
+    private double getIdleBobOffset(int gridX, int gridY) {
+        double time = (System.nanoTime() - animationStartNanos) / 1_000_000_000.0;
+        double phaseOffset = (gridX + gridY) * 0.35;
+        return Math.sin((time * 4.0) + phaseOffset) * 2.0;
     }
 }
