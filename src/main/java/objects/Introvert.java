@@ -10,7 +10,7 @@ public class Introvert extends Human {
     @Override
     public void onAttackedBy(Player player) {
         setActive(false);
-        player.consumeStamina(1);
+        player.consumeStamina(3);
         player.takeDamage(1);
     }
 }

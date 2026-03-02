@@ -161,7 +161,8 @@ public class GameEngine {
     }
 
     public int getMaxHealth() {
-        return maxHealth;
+        Player p = session.getPlayer();
+        return p == null ? maxHealth : p.getMaxHealth();
     }
 
     public int getMaxStamina() {

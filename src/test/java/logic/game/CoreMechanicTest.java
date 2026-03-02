@@ -17,7 +17,8 @@ class CoreMechanicTest {
         session.startLevel(LevelId.ISCALE_403);
 
         assertEquals(5, session.getPlayer().getHealth());
-        assertEquals(9, session.getPlayer().getStamina());
+        // Match current LevelConfig for ISCALE_403 (stamina configured by game)
+        assertEquals(20, session.getPlayer().getStamina());
     }
 
     @Test

@@ -5,8 +5,19 @@ import logic.components.Direction;
 import objects.BaseObject;
 
 public class Chair extends BaseObject implements Moveable {
-    public Chair(int x, int y) {
+    private final String orientation;
+
+    public Chair(int x, int y, String orientation) {
         super("Chair", x, y);
+        this.orientation = orientation;
+    }
+
+    public Chair(int x, int y) {
+        this(x, y, "Front");
+    }
+
+    public String getOrientation() {
+        return orientation;
     }
 
     @Override

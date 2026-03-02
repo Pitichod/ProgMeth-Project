@@ -94,15 +94,73 @@ public class GameBoard {
                 break;
             case 'C':
             case 'c':
-                moveableObstacles.add(new Chair(x, y));
+                moveableObstacles.add(new Chair(x, y, "Front"));
+                break;
+            case 'B':
+            case 'b':
+                moveableObstacles.add(new Chair(x, y, "Back"));
+                break;
+            case 'J':
+            case 'j':
+                moveableObstacles.add(new Chair(x, y, "Left"));
+                break;
+            case 'K':
+            case 'k':
+                moveableObstacles.add(new Chair(x, y, "Right"));
                 break;
             case 'T':
             case 't':
-                moveableObstacles.add(new Table(x, y));
+                moveableObstacles.add(new Table(x, y, "Down"));
+                break;
+            case 'U':
+            case 'u':
+                moveableObstacles.add(new Table(x, y, "Up"));
+                break;
+            case 'L':
+            case 'l':
+                moveableObstacles.add(new Table(x, y, "Left"));
+                break;
+            case 'H':
+            case 'h':
+                moveableObstacles.add(new Table(x, y, "Right"));
                 break;
             case 'W':
             case 'w':
                 cables.add(new Cable(x, y));
+                break;
+            // Plugs (single-char map symbols) -> choose mapping here
+            case '<':
+                cables.add(new Cable(x, y, "PlugLeft"));
+                break;
+            case '>':
+                cables.add(new Cable(x, y, "PlugRight"));
+                break;
+            case '^':
+                cables.add(new Cable(x, y, "PlugUp"));
+                break;
+            case 'v':
+            case 'V':
+                cables.add(new Cable(x, y, "PlugDown"));
+                break;
+            // Horizontal / vertical wires
+            case '-':
+                cables.add(new Cable(x, y, "WireH"));
+                break;
+            case '|':
+                cables.add(new Cable(x, y, "WireV"));
+                break;
+            // HPlug variants (alternate plug visuals) - use digits to avoid conflicting with existing letters
+            case '4':
+                cables.add(new Cable(x, y, "HPlugLeft"));
+                break;
+            case '5':
+                cables.add(new Cable(x, y, "HPlugRight"));
+                break;
+            case '6':
+                cables.add(new Cable(x, y, "HPlugUp"));
+                break;
+            case '7':
+                cables.add(new Cable(x, y, "HPlugDown"));
                 break;
             case 'I':
             case 'i':

@@ -6,11 +6,17 @@ import objects.Human;
 
 public class Player extends Human {
     private int stamina;
+    private final int maxHealth;
     private Direction lastDirection = Direction.DOWN;
 
-    public Player(int health, int stamina, int x, int y) {
-        super("Player", health, x, y);
+    public Player(int maxHealth, int stamina, int x, int y) {
+        super("Player", maxHealth, x, y);
+        this.maxHealth = Math.max(1, maxHealth);
         this.stamina = Math.max(0, stamina);
+    }
+
+    public int getMaxHealth() {
+        return maxHealth;
     }
 
     public Direction getLastDirection() {
@@ -51,7 +57,8 @@ public class Player extends Human {
 
     public void heal(int amount) {
         if (amount > 0) {
-            setHealth(getHealth() + amount);
+            int newHealth = Math.min(getMaxHealth(), getHealth() + amount);
+            setHealth(newHealth);
             setActive(true);
         }
     }
