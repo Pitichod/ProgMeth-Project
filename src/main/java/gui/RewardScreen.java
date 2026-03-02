@@ -35,9 +35,9 @@ public class RewardScreen {
     }
 
     public Scene createScene() {
-        Label titleLabel = new Label("Level " + currentLevelNumber + " Clear!");
-        titleLabel.setFont(Font.font("System", 64));
-        titleLabel.setTextFill(Color.BLACK);
+//        Label titleLabel = new Label("Level " + currentLevelNumber + " Clear!");
+//        titleLabel.setFont(Font.font("System", 64));
+//        titleLabel.setTextFill(Color.BLACK);
 
         javafx.scene.image.ImageView centerView = new javafx.scene.image.ImageView();
         centerView.setPreserveRatio(true);
@@ -89,11 +89,14 @@ public class RewardScreen {
         bottom.setAlignment(Pos.CENTER);
         bottom.setPadding(new Insets(24));
 
-        VBox root = new VBox(30, titleLabel, centerView, bottom);
+        VBox root = new VBox(30, centerView, bottom);
         root.setAlignment(Pos.TOP_CENTER);
         root.setPadding(new Insets(24));
         root.setStyle("-fx-background-color: #FFFFFF;");
 
-        return new Scene(root, 1200, 700);
+        Scene scene = new Scene(root, 1200, 700);
+        // Bind reward image size to scene width for responsiveness
+        centerView.fitWidthProperty().bind(scene.widthProperty().multiply(0.6));
+        return scene;
     }
 }

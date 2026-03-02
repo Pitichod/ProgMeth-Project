@@ -40,8 +40,8 @@ public class LevelConfig {
         return switch (levelId) {
             // Default stamina per original tests: 12,10,9,8,7 (health values kept but not used by tests)
             case ISCALE_401 -> new LevelConfig(levelId, 10, 15, new Glasses());
-            case ISCALE_402 -> new LevelConfig(levelId, 5, 15, new Mouse());
-            case ISCALE_403 -> new LevelConfig(levelId, 5, 20, new Notebook());
+            case ISCALE_402 -> new LevelConfig(levelId, 5, 15, new Notebook());
+            case ISCALE_403 -> new LevelConfig(levelId, 5, 20, new Mouse());
             case ISCALE_404 -> new LevelConfig(levelId, 5, 15, new Backpack());
             case ISCALE_405 -> new LevelConfig(levelId, 10, 100, new ChatGPTPro());
         };

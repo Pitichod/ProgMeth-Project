@@ -118,6 +118,9 @@ public class GameApp extends Application {
 
         Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         stage.setScene(scene);
+        if (mainView != null) {
+            mainView.fitWidthProperty().bind(scene.widthProperty().multiply(0.7));
+        }
     }
 
     private void showHowToPlayScene() {
@@ -192,6 +195,7 @@ public class GameApp extends Application {
 
         Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         stage.setScene(scene);
+        pageView.fitWidthProperty().bind(scene.widthProperty().multiply(0.8));
     }
 
     private void showLevelSelectScene() {
@@ -345,6 +349,26 @@ public class GameApp extends Application {
         });
 
         stage.setScene(scene);
+
+        // Make canvas responsive to window size: keep at least board pixel size but
+        // expand/shrink with scene while preserving padding.
+        scene.widthProperty().addListener((obs, oldV, newV) -> {
+            double dw = newV.doubleValue() - 60;
+            double newWidth = Math.max(dw, boardPixelWidth + 40);
+            gameCanvas.setWidth(newWidth);
+            refreshGameView();
+        });
+        scene.heightProperty().addListener((obs, oldV, newV) -> {
+            double dh = newV.doubleValue() - 170;
+            double newHeight = Math.max(dh, boardPixelHeight + 40);
+            gameCanvas.setHeight(newHeight);
+            refreshGameView();
+        });
+
+        // initialize canvas size to current scene size
+        gameCanvas.setWidth(Math.max(scene.getWidth() - 60, boardPixelWidth + 40));
+        gameCanvas.setHeight(Math.max(scene.getHeight() - 170, boardPixelHeight + 40));
+
         syncPlayerRenderPosition();
         refreshGameView();
         startRenderLoop();
@@ -769,7 +793,14 @@ public class GameApp extends Application {
             default -> 1;
         };
 
-        RewardScreen rewardScreen = new RewardScreen(stage, session.getCollectedRewards(), currentLevel);
+        java.util.List<rewards.Reward> collected = session.getCollectedRewards();
+        java.util.List<rewards.Reward> toShow;
+        if (collected == null || collected.isEmpty()) {
+            toShow = java.util.List.of();
+        } else {
+            toShow = java.util.List.of(collected.get(collected.size() - 1));
+        }
+        RewardScreen rewardScreen = new RewardScreen(stage, toShow, currentLevel);
 
         rewardScreen.setOnNextLevel(() -> {
             LevelId nextLevel = engine.getNextLevelId();
