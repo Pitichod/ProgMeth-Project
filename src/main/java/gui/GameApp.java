@@ -536,7 +536,37 @@ public class GameApp extends Application {
 
             for (Human human : board.getHumans()) {
                 if (human.isActive() && human.getY() == row) {
-                    drawHuman(g, originX, originY, human.getX(), human.getY(), human.getName());
+                    // Update random facing when player not nearby
+                    int playerX = engine.getPlayer().getX();
+                    int playerY = engine.getPlayer().getY();
+                    int dx = Math.abs(playerX - human.getX());
+                    int dy = Math.abs(playerY - human.getY());
+                    int distance = dx + dy;
+                    long now = System.nanoTime();
+
+                    if (distance <= HUMAN_REACTION_RANGE) {
+                        // When player nearby, face player (cancel random idle)
+                        human.setFacing(getHumanFacingDirection(human.getX(), human.getY()));
+                        // schedule next random change a bit later
+                        human.setNextFaceChangeAt(now + 2_000_000_000L);
+                    } else {
+                        // If it's time, pick a new random facing direction
+                        if (now >= human.getNextFaceChangeAt()) {
+                            int r = (int) (Math.random() * 4);
+                            logic.components.Direction d = switch (r) {
+                                case 0 -> logic.components.Direction.UP;
+                                case 1 -> logic.components.Direction.DOWN;
+                                case 2 -> logic.components.Direction.LEFT;
+                                default -> logic.components.Direction.RIGHT;
+                            };
+                            human.setFacing(d);
+                            // next change in 1-5 seconds
+                            long delay = (1 + (long)(Math.random() * 5)) * 1_000_000_000L;
+                            human.setNextFaceChangeAt(now + delay);
+                        }
+                    }
+
+                    drawHuman(g, originX, originY, human.getX(), human.getY(), human.getName(), human.getFacing(), distance);
                 }
             }
 
@@ -658,6 +688,9 @@ public class GameApp extends Application {
     private void drawItem(GraphicsContext g, double originX, double originY, int gridX, int gridY, String name) {
         double x = originX + gridX * TILE;
         double y = originY + gridY * TILE;
+        // Idle bobbing for items (up/down)
+        double time = (System.nanoTime() - animationStartNanos) / 1_000_000_000.0;
+        double bob = Math.sin((time * 2.0) + (gridX + gridY) * 0.5) * 6.0;
 
         String imagePath = switch (name) {
             case "Parabola" -> "/images/Object/Parabola.png";
@@ -677,7 +710,7 @@ public class GameApp extends Application {
                     double scaledWidth = imageWidth * scale;
                     double scaledHeight = imageHeight * scale;
                     double drawX = x + (TILE - scaledWidth) / 2.0;
-                    double drawY = y + (TILE - scaledHeight) / 2.0;
+                    double drawY = y + (TILE - scaledHeight) / 2.0 + bob;
                     g.drawImage(itemImage, drawX, drawY, scaledWidth, scaledHeight);
                     return;
                 }
@@ -696,15 +729,15 @@ public class GameApp extends Application {
             case "RobuxGiftCard" -> "R";
             default -> "?";
         };
-        g.fillText(token, x + 28, y + 38);
+        g.fillText(token, x + 28, y + 38 + bob);
     }
 
-    private void drawHuman(GraphicsContext g, double originX, double originY, int gridX, int gridY, String name) {
+    private void drawHuman(GraphicsContext g, double originX, double originY, int gridX, int gridY, String name, logic.components.Direction facing, int distanceToPlayer) {
         double x = originX + gridX * TILE;
         double y = originY + gridY * TILE;
-        double bobOffset = getIdleBobOffset(gridX, gridY);
+        // humans do not bob; keep static position
 
-        String imagePath = getHumanImagePath(name, gridX, gridY);
+        String imagePath = getHumanImagePath(name, facing);
 
         if (imagePath != null) {
             Image humanImage = ImageLoader.loadImage(imagePath);
@@ -715,7 +748,7 @@ public class GameApp extends Application {
                     double targetHeight = TILE * 1.25;
                     double targetWidth = targetHeight * (imageWidth / imageHeight);
                     double drawX = x + (TILE - targetWidth) / 2.0;
-                    double drawY = y + TILE - targetHeight + bobOffset;
+                    double drawY = y + TILE - targetHeight;
                     g.drawImage(humanImage, drawX, drawY, targetWidth, targetHeight);
                     return;
                 }
@@ -723,9 +756,9 @@ public class GameApp extends Application {
         }
 
         g.setFill(Color.web("#f57c2f"));
-        g.fillOval(x + 10, y + 10 + bobOffset, TILE - 20, TILE - 20);
+        g.fillOval(x + 10, y + 10, TILE - 20, TILE - 20);
         g.setStroke(Color.BLACK);
-        g.strokeOval(x + 10, y + 10 + bobOffset, TILE - 20, TILE - 20);
+        g.strokeOval(x + 10, y + 10, TILE - 20, TILE - 20);
 
         g.setFill(Color.BLACK);
         String token = switch (name) {
@@ -735,10 +768,10 @@ public class GameApp extends Application {
             case "Teacher" -> "R";
             default -> "H";
         };
-        g.fillText(token, x + 28, y + 38 + bobOffset);
+        g.fillText(token, x + 28, y + 38);
     }
 
-    private String getHumanImagePath(String name, int humanX, int humanY) {
+    private String getHumanImagePath(String name, Direction facing) {
         String humanPrefix = switch (name) {
             case "Introvert" -> "Introvert";
             case "Extrovert" -> "Extrovert";
@@ -751,7 +784,6 @@ public class GameApp extends Application {
             return null;
         }
 
-        Direction facing = getHumanFacingDirection(humanX, humanY);
         String suffix = switch (facing) {
             case UP -> "Back.png";
             case DOWN -> "Front.png";
