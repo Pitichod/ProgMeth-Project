@@ -6,6 +6,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.animation.ScaleTransition;
 import javafx.util.Duration;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -54,6 +55,8 @@ public class GameApp extends Application {
     private ProgressBar staminaBar;
     private Canvas gameCanvas;
     private AnimationTimer renderTimer;
+    private boolean gameOverHandled = false;
+    private logic.game.LevelId currentLevelId;
     private long animationStartNanos;
     private double renderPlayerX;
     private double renderPlayerY;
@@ -74,6 +77,7 @@ public class GameApp extends Application {
 
     private void showStartScene() {
         stopRenderLoop();
+        SoundManager.playBackgroundLoop();
         // Main screen uses provided Main image and two buttons: Press to Start and How to Play
         stopRenderLoop();
         Image mainImage = ImageLoader.loadImage("/Page/Main.png");
@@ -150,6 +154,9 @@ public class GameApp extends Application {
         if (howTo.getGraphic() instanceof javafx.scene.image.ImageView hIv) {
             hIv.fitWidthProperty().bind(scene.widthProperty().multiply(0.22));
         }
+        // play click on those buttons
+        pressToStart.addEventHandler(MouseEvent.MOUSE_PRESSED, ev -> SoundManager.playClick());
+        howTo.addEventHandler(MouseEvent.MOUSE_PRESSED, ev -> SoundManager.playClick());
     }
 
     private void showHowToPlayScene() {
@@ -198,9 +205,11 @@ public class GameApp extends Application {
             }
         });
         applyHoverEffect(next);
+        next.addEventHandler(MouseEvent.MOUSE_PRESSED, ev -> SoundManager.playClick());
 
         letsPlay.setOnAction(e -> startGameWithLevel(1));
         applyHoverEffect(letsPlay);
+        letsPlay.addEventHandler(MouseEvent.MOUSE_PRESSED, ev -> SoundManager.playClick());
 
         HBox bottom = new HBox(12, next);
         bottom.setAlignment(Pos.CENTER_RIGHT);
@@ -231,6 +240,7 @@ public class GameApp extends Application {
 
     private void showLevelSelectScene() {
         stopRenderLoop();
+        SoundManager.stopBackground();
 
         Label title = new Label("Select Level");
         title.setFont(Font.font("System", 56));
@@ -248,11 +258,13 @@ public class GameApp extends Application {
             levelButton.setPrefHeight(100);
             levelButton.setOnAction(e -> startGameWithLevel(levelNum));
             applyHoverEffect(levelButton);
+            levelButton.addEventHandler(MouseEvent.MOUSE_PRESSED, ev -> SoundManager.playClick());
             levelGrid.add(levelButton, (i - 1) % 5, (i - 1) / 5);
         }
 
         Button backButton = createMainButton("Back");
         backButton.setOnAction(e -> showStartScene());
+        backButton.addEventHandler(MouseEvent.MOUSE_PRESSED, ev -> SoundManager.playClick());
 
         VBox root = new VBox(20, title, levelGrid, backButton);
         root.setAlignment(Pos.TOP_CENTER);
@@ -304,6 +316,7 @@ public class GameApp extends Application {
         button.setTextFill(Color.WHITE);
         button.setStyle("-fx-background-color: #000000; -fx-background-radius: 40; -fx-border-radius: 40; -fx-border-color: white; -fx-border-width: 2;");
         applyHoverEffect(button);
+        button.addEventHandler(MouseEvent.MOUSE_PRESSED, ev -> SoundManager.playClick());
         return button;
     }
 
@@ -321,12 +334,18 @@ public class GameApp extends Application {
             st.setToY(1.0);
             st.playFromStart();
         });
+        // play click sound when button is pressed (non-intrusive added handler)
+        button.addEventHandler(MouseEvent.MOUSE_PRESSED, ev -> SoundManager.playClick());
     }
 
     private void showGameScene(LevelId levelId) {
         stopRenderLoop();
         engine = new GameEngine(session, levelId);
         animationStartNanos = System.nanoTime();
+        // reset game-over flag for this level and start background music
+        this.currentLevelId = levelId;
+        this.gameOverHandled = false;
+        SoundManager.playBackgroundLoop();
 
         hpBar = new ProgressBar(1.0);
         staminaBar = new ProgressBar(1.0);
@@ -393,7 +412,7 @@ public class GameApp extends Application {
             refreshGameView();
             
             if (engine.isCompleted() && engine.getPlayer().getHealth() > 0) {
-                showRewardScreen();
+                handleWin();
             }
         });
 
@@ -428,14 +447,34 @@ public class GameApp extends Application {
     private void handlePlayerMove(Direction direction) {
         int oldX = engine.getPlayer().getX();
         int oldY = engine.getPlayer().getY();
+        int oldHp = engine.getPlayer().getHealth();
+        int oldStamina = engine.getPlayer().getStamina();
+        String prevStatus = engine.getStatusMessage();
+
         updatePlayerAnimation();
 
         engine.move(direction);
 
         int newX = engine.getPlayer().getX();
         int newY = engine.getPlayer().getY();
+        int newHp = engine.getPlayer().getHealth();
+        int newStamina = engine.getPlayer().getStamina();
+        String newStatus = engine.getStatusMessage();
+
+        // play walk only if player actually moved
         if (newX != oldX || newY != oldY) {
             startPlayerMoveAnimation(newX, newY);
+            SoundManager.playWalk();
+        }
+
+        // play hurt when HP decreased
+        if (newHp < oldHp) {
+            SoundManager.playHurt();
+        }
+
+        // play pick-up when status indicates item picked
+        if (newStatus != null && newStatus.startsWith("Picked ") && !newStatus.equals(prevStatus)) {
+            SoundManager.playPickUp();
         }
     }
 
@@ -495,6 +534,57 @@ public class GameApp extends Application {
         }
     }
 
+    private void handleWin() {
+        if (gameOverHandled) return;
+        gameOverHandled = true;
+        SoundManager.stopBackground();
+        SoundManager.playWin();
+        // show reward screen (this will take over the scene)
+        showRewardScreen();
+    }
+
+    private void handleLose() {
+        if (gameOverHandled) return;
+        gameOverHandled = true;
+        SoundManager.stopBackground();
+        SoundManager.playLose();
+        stopRenderLoop();
+        showLoseScene();
+    }
+
+    private void showLoseScene() {
+        Label titleLabel = new Label("You lost this level");
+        titleLabel.setFont(Font.font("System", 48));
+        titleLabel.setTextFill(Color.BLACK);
+
+        Label msg = new Label("HP or Stamina reached 0 away from exit. Restart or return to menu.");
+        msg.setFont(Font.font(20));
+        msg.setTextFill(Color.BLACK);
+
+        Button restart = new Button("Restart Level");
+        restart.setFont(Font.font(28));
+        restart.setOnAction(e -> {
+            showGameScene(currentLevelId);
+        });
+        applyHoverEffect(restart);
+
+        Button menu = new Button("Back to Menu");
+        menu.setFont(Font.font(28));
+        menu.setOnAction(e -> showStartScene());
+        applyHoverEffect(menu);
+
+        HBox buttons = new HBox(16, restart, menu);
+        buttons.setAlignment(Pos.CENTER);
+
+        VBox root = new VBox(24, titleLabel, msg, buttons);
+        root.setAlignment(Pos.CENTER);
+        root.setPadding(new Insets(24));
+        root.setStyle("-fx-background-color: #FFFFFF;");
+
+        Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        stage.setScene(scene);
+    }
+
     private HBox createHudRow(String icon, ProgressBar bar, Label text) {
         Label iconLabel = new Label(icon);
         iconLabel.setFont(Font.font(26));
@@ -518,6 +608,21 @@ public class GameApp extends Application {
 
         hpBar.setProgress(Math.max(0.0, Math.min(1.0, hp / (double) engine.getMaxHealth())));
         staminaBar.setProgress(Math.max(0.0, Math.min(1.0, stamina / (double) engine.getMaxStamina())));
+
+        // Check win / lose conditions once per refresh
+        int playerX = engine.getPlayer().getX();
+        int playerY = engine.getPlayer().getY();
+        if (!gameOverHandled) {
+            if (engine.isCompleted() && hp > 0) {
+                handleWin();
+                return;
+            }
+            // lose when HP or stamina zero and player is NOT on the door/exit
+            if ((hp <= 0 || stamina <= 0) && !engine.getBoard().isDoor(playerX, playerY)) {
+                handleLose();
+                return;
+            }
+        }
 
         drawBoard();
     }
