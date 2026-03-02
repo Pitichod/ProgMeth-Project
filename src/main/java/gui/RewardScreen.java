@@ -3,6 +3,8 @@ package gui;
 import java.util.List;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.animation.ScaleTransition;
+import javafx.util.Duration;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -83,6 +85,19 @@ public class RewardScreen {
             } else {
                 if (onNextLevel != null) onNextLevel.run();
             }
+        });
+        // hover scale effect
+        nextButton.setOnMouseEntered(e -> {
+            ScaleTransition st = new ScaleTransition(Duration.millis(120), nextButton);
+            st.setToX(1.08);
+            st.setToY(1.08);
+            st.playFromStart();
+        });
+        nextButton.setOnMouseExited(e -> {
+            ScaleTransition st = new ScaleTransition(Duration.millis(120), nextButton);
+            st.setToX(1.0);
+            st.setToY(1.0);
+            st.playFromStart();
         });
 
         HBox bottom = new HBox(nextButton);

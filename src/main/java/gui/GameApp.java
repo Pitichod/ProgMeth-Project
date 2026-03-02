@@ -4,6 +4,8 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.animation.ScaleTransition;
+import javafx.util.Duration;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -74,13 +76,11 @@ public class GameApp extends Application {
         stopRenderLoop();
         // Main screen uses provided Main image and two buttons: Press to Start and How to Play
         stopRenderLoop();
-
         Image mainImage = ImageLoader.loadImage("/Page/Main.png");
         javafx.scene.image.ImageView mainView = null;
         if (mainImage != null) {
             mainView = new javafx.scene.image.ImageView(mainImage);
             mainView.setPreserveRatio(true);
-            mainView.setFitWidth(WINDOW_WIDTH * 0.7);
         }
 
         Button pressToStart = new Button();
@@ -88,38 +88,67 @@ public class GameApp extends Application {
         if (pImg != null) {
             javafx.scene.image.ImageView iv = new javafx.scene.image.ImageView(pImg);
             iv.setPreserveRatio(true);
-            iv.setFitWidth(220);
+            iv.setFitWidth(260);
             pressToStart.setGraphic(iv);
+            pressToStart.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
         } else {
             pressToStart.setText("Press to Start");
         }
         pressToStart.setOnAction(e -> startGameWithLevel(1));
+        applyHoverEffect(pressToStart);
 
         Button howTo = new Button();
         Image hImg = ImageLoader.loadImage("/Page/HowtoPlay.png");
         if (hImg != null) {
             javafx.scene.image.ImageView iv2 = new javafx.scene.image.ImageView(hImg);
             iv2.setPreserveRatio(true);
-            iv2.setFitWidth(220);
+            iv2.setFitWidth(260);
             howTo.setGraphic(iv2);
+            howTo.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
         } else {
             howTo.setText("How to Play");
         }
         howTo.setOnAction(e -> showHowToPlayScene());
+        applyHoverEffect(howTo);
 
-        HBox buttons = new HBox(24, pressToStart, howTo);
+        HBox buttons = new HBox(36, pressToStart, howTo);
         buttons.setAlignment(Pos.CENTER);
 
-        VBox root = new VBox(24);
-        root.setAlignment(Pos.CENTER);
-        root.setStyle("-fx-background-color: #FFFFFF;");
+        StackPane root = new StackPane();
+        // remove explicit background so image can fill entire window
         if (mainView != null) root.getChildren().add(mainView);
-        root.getChildren().add(buttons);
+
+        // framed box containing the buttons so they appear 'in the box' under title
+        StackPane buttonBox = new StackPane(buttons);
+        buttonBox.setStyle("-fx-background-color: rgba(255,255,255,0.95); -fx-border-color: black; -fx-border-width: 3; -fx-padding: 18;");
+        buttonBox.setMaxWidth(800);
+
+        VBox overlay = new VBox();
+        overlay.setAlignment(Pos.TOP_CENTER);
+        overlay.getChildren().add(buttonBox);
+        root.getChildren().add(overlay);
 
         Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         stage.setScene(scene);
+
         if (mainView != null) {
-            mainView.fitWidthProperty().bind(scene.widthProperty().multiply(0.7));
+            // make image fill the window completely
+            mainView.setPreserveRatio(false);
+            mainView.fitWidthProperty().bind(scene.widthProperty());
+            mainView.fitHeightProperty().bind(scene.heightProperty());
+
+            // position the button box relative to the image: below the title area
+            // try to place at about 62% of image height (tweakable)
+            buttonBox.translateYProperty().bind(scene.heightProperty().multiply(0.62));
+            // scale button box width relative to scene
+            buttonBox.maxWidthProperty().bind(scene.widthProperty().multiply(0.6));
+        }
+        // make button images responsive to scene width
+        if (pressToStart.getGraphic() instanceof javafx.scene.image.ImageView pIv) {
+            pIv.fitWidthProperty().bind(scene.widthProperty().multiply(0.22));
+        }
+        if (howTo.getGraphic() instanceof javafx.scene.image.ImageView hIv) {
+            hIv.fitWidthProperty().bind(scene.widthProperty().multiply(0.22));
         }
     }
 
@@ -168,8 +197,10 @@ public class GameApp extends Application {
                 updateView.run();
             }
         });
+        applyHoverEffect(next);
 
         letsPlay.setOnAction(e -> startGameWithLevel(1));
+        applyHoverEffect(letsPlay);
 
         HBox bottom = new HBox(12, next);
         bottom.setAlignment(Pos.CENTER_RIGHT);
@@ -216,6 +247,7 @@ public class GameApp extends Application {
             levelButton.setPrefWidth(200);
             levelButton.setPrefHeight(100);
             levelButton.setOnAction(e -> startGameWithLevel(levelNum));
+            applyHoverEffect(levelButton);
             levelGrid.add(levelButton, (i - 1) % 5, (i - 1) / 5);
         }
 
@@ -271,7 +303,24 @@ public class GameApp extends Application {
         button.setPrefWidth(400);
         button.setTextFill(Color.WHITE);
         button.setStyle("-fx-background-color: #000000; -fx-background-radius: 40; -fx-border-radius: 40; -fx-border-color: white; -fx-border-width: 2;");
+        applyHoverEffect(button);
         return button;
+    }
+
+    private void applyHoverEffect(Button button) {
+        // scale up slightly on hover with a smooth transition
+        button.setOnMouseEntered(e -> {
+            ScaleTransition st = new ScaleTransition(Duration.millis(120), button);
+            st.setToX(1.08);
+            st.setToY(1.08);
+            st.playFromStart();
+        });
+        button.setOnMouseExited(e -> {
+            ScaleTransition st = new ScaleTransition(Duration.millis(120), button);
+            st.setToX(1.0);
+            st.setToY(1.0);
+            st.playFromStart();
+        });
     }
 
     private void showGameScene(LevelId levelId) {
@@ -889,6 +938,7 @@ public class GameApp extends Application {
         menuButton.setTextFill(Color.WHITE);
         menuButton.setStyle("-fx-background-color: #000000; -fx-background-radius: 20; -fx-border-color: white; -fx-border-width: 2;");
         menuButton.setOnAction(e -> showStartScene());
+        applyHoverEffect(menuButton);
 
         VBox root = new VBox(40, titleLabel, messageLabel, rewardDisplay, menuButton);
         root.setAlignment(Pos.TOP_CENTER);
