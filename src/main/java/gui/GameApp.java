@@ -18,6 +18,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -104,7 +106,10 @@ public class GameApp extends Application {
         } else {
             pressToStart.setText("Press to Start");
         }
-        pressToStart.setOnAction(e -> showOpeningScene(1));
+        pressToStart.setOnAction(e -> {
+            SoundManager.playOpening(1);
+            showOpeningScene(1);
+        });
         applyHoverEffect(pressToStart);
 
         Button howTo = new Button();
@@ -213,8 +218,11 @@ public class GameApp extends Application {
         });
         applyHoverEffect(next);
 
-        // When clicking "Let's play", show the opening image sequence first (keeps flow consistent)
-        letsPlay.setOnAction(e -> showOpeningScene(1));
+        // When clicking "Let's play", play opening sound then show the opening image sequence
+        letsPlay.setOnAction(e -> {
+            SoundManager.playOpening(1);
+            showOpeningScene(1);
+        });
         applyHoverEffect(letsPlay);
 
         HBox bottom = new HBox(12, next);
@@ -288,13 +296,19 @@ public class GameApp extends Application {
             if (page[0] < MAX_OPENING_PAGES) {
                 page[0]++;
                 updateView.run();
+                SoundManager.playOpening(page[0]);
             } else {
+                // stop opening sound before starting
+                SoundManager.stopOpening();
                 startGameWithLevel(levelNum);
             }
         });
         applyHoverEffect(next);
 
-        letsPlay.setOnAction(e -> startGameWithLevel(levelNum));
+        letsPlay.setOnAction(e -> {
+            SoundManager.stopOpening();
+            startGameWithLevel(levelNum);
+        });
         applyHoverEffect(letsPlay);
 
         HBox bottom = new HBox(12, next);
@@ -441,13 +455,33 @@ public class GameApp extends Application {
         levelLabel = new Label();
         statusLabel = new Label();
 
-        HBox topHud = new HBox(22,
-                createHudRow("HP", hpBar, hpLabel),
-                createHudRow("ST", staminaBar, staminaLabel),
-                levelLabel
-        );
-        topHud.setPadding(new Insets(10, 20, 10, 20));
+        // Left-aligned compact HUD showing only remaining values
+        Label hpText = new Label("HP : ");
+        hpText.setFont(Font.font(20));
+        hpLabel.setFont(Font.font(20));
+        hpLabel.setTextFill(Color.BLACK);
+
+        Label stText = new Label("Stamina : ");
+        stText.setFont(Font.font(20));
+        staminaLabel.setFont(Font.font(20));
+        staminaLabel.setTextFill(Color.BLACK);
+
+        HBox stRow = new HBox(6, stText, staminaLabel);
+        stRow.setAlignment(Pos.CENTER_LEFT);
+
+        HBox hpRow = new HBox(6, hpText, hpLabel);
+        hpRow.setAlignment(Pos.CENTER_LEFT);
+
+        VBox leftHud = new VBox(4, stRow, hpRow);
+        leftHud.setAlignment(Pos.CENTER_LEFT);
+        leftHud.setPadding(new Insets(8, 0, 8, 20));
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox topHud = new HBox(leftHud, spacer, levelLabel);
         topHud.setAlignment(Pos.CENTER_LEFT);
+        topHud.setPadding(new Insets(4, 20, 4, 0));
 
         // Size canvas to fit the board if the board is larger than the default view
         GameBoard board = engine.getBoard();
@@ -706,8 +740,9 @@ public class GameApp extends Application {
         int hp = engine.getPlayer().getHealth();
         int stamina = engine.getPlayer().getStamina();
 
-        hpLabel.setText(hp + "/" + engine.getMaxHealth());
-        staminaLabel.setText(stamina + "/" + engine.getMaxStamina());
+        // show only remaining values
+        hpLabel.setText(String.valueOf(hp));
+        staminaLabel.setText(String.valueOf(stamina));
         levelLabel.setText(engine.getLevelLabel());
         statusLabel.setText(engine.getStatusMessage() + " (ESC: menu)");
 
@@ -1151,13 +1186,18 @@ public class GameApp extends Application {
             if (page[0] < MAX_ENDING_PAGES) {
                 page[0]++;
                 updateView.run();
+                SoundManager.playEnding(page[0]);
             } else {
+                SoundManager.stopEnding();
                 showStartScene();
             }
         });
         applyHoverEffect(next);
 
-        end.setOnAction(e -> showStartScene());
+        end.setOnAction(e -> {
+            SoundManager.stopEnding();
+            showStartScene();
+        });
         applyHoverEffect(end);
 
         HBox bottom = new HBox(12, next);
