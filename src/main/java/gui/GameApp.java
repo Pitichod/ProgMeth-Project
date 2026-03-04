@@ -24,6 +24,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.event.ActionEvent;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import logic.components.Direction;
 import logic.game.GameBoard;
 import logic.game.GameEngine;
@@ -38,7 +44,7 @@ import rewards.Reward;
 
 public class GameApp extends Application {
     private static final int WINDOW_WIDTH = 1200;
-    private static final int WINDOW_HEIGHT = 700;
+    private static final int WINDOW_HEIGHT = 800;
     private static final int TILE = 64;
     private static final int HUMAN_REACTION_RANGE = 1;
     private static final long PLAYER_MOVE_ANIM_NANOS = 120_000_000L;
@@ -98,7 +104,7 @@ public class GameApp extends Application {
         } else {
             pressToStart.setText("Press to Start");
         }
-        pressToStart.setOnAction(e -> startGameWithLevel(1));
+        pressToStart.setOnAction(e -> showOpeningScene(1));
         applyHoverEffect(pressToStart);
 
         Button howTo = new Button();
@@ -154,9 +160,7 @@ public class GameApp extends Application {
         if (howTo.getGraphic() instanceof javafx.scene.image.ImageView hIv) {
             hIv.fitWidthProperty().bind(scene.widthProperty().multiply(0.22));
         }
-        // play click on those buttons
-        pressToStart.addEventHandler(MouseEvent.MOUSE_PRESSED, ev -> SoundManager.playClick());
-        howTo.addEventHandler(MouseEvent.MOUSE_PRESSED, ev -> SoundManager.playClick());
+        // click sound handled by button ActionEvent (keyboard Enter/Space also triggers)
     }
 
     private void showHowToPlayScene() {
@@ -202,14 +206,16 @@ public class GameApp extends Application {
             if (page[0] < 6) {
                 page[0]++;
                 updateView.run();
+            } else {
+                // at end of HowToPlay, show the opening image sequence before starting level 1
+                showOpeningScene(1);
             }
         });
         applyHoverEffect(next);
-        next.addEventHandler(MouseEvent.MOUSE_PRESSED, ev -> SoundManager.playClick());
 
-        letsPlay.setOnAction(e -> startGameWithLevel(1));
+        // When clicking "Let's play", show the opening image sequence first (keeps flow consistent)
+        letsPlay.setOnAction(e -> showOpeningScene(1));
         applyHoverEffect(letsPlay);
-        letsPlay.addEventHandler(MouseEvent.MOUSE_PRESSED, ev -> SoundManager.playClick());
 
         HBox bottom = new HBox(12, next);
         bottom.setAlignment(Pos.CENTER_RIGHT);
@@ -224,6 +230,86 @@ public class GameApp extends Application {
         pageView.imageProperty().addListener((obs, old, nw) -> {
             HBox b;
             if (page[0] < 6) {
+                b = new HBox(12, next);
+            } else {
+                b = new HBox(12, letsPlay);
+            }
+            b.setAlignment(Pos.CENTER_RIGHT);
+            b.setPadding(new Insets(12));
+            root.setBottom(b);
+        });
+
+        Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        stage.setScene(scene);
+        pageView.fitWidthProperty().bind(scene.widthProperty().multiply(0.8));
+    }
+
+    private void showOpeningScene(int levelNum) {
+        stopRenderLoop();
+        SoundManager.stopBackground();
+
+        javafx.scene.image.ImageView pageView = new javafx.scene.image.ImageView();
+        pageView.setPreserveRatio(true);
+        pageView.setFitWidth(WINDOW_WIDTH * 0.8);
+
+        final int MAX_OPENING_PAGES = 3;
+        final int[] page = {1};
+        Runnable updateView = () -> {
+            String path = "/Openning/" + page[0] + ".png";
+            Image img = ImageLoader.loadImage(path);
+            if (img != null) pageView.setImage(img);
+        };
+
+        updateView.run();
+
+        Button next = new Button();
+        Image nextImg = ImageLoader.loadImage("/Openning/Next.png");
+        if (nextImg != null) {
+            javafx.scene.image.ImageView niv = new javafx.scene.image.ImageView(nextImg);
+            niv.setPreserveRatio(true);
+            niv.setFitWidth(160);
+            next.setGraphic(niv);
+        } else {
+            next.setText("Next");
+        }
+
+        Button letsPlay = new Button();
+        Image lpImg = ImageLoader.loadImage("/Openning/LetsPlay.png");
+        if (lpImg != null) {
+            javafx.scene.image.ImageView liv = new javafx.scene.image.ImageView(lpImg);
+            liv.setPreserveRatio(true);
+            liv.setFitWidth(220);
+            letsPlay.setGraphic(liv);
+        } else {
+            letsPlay.setText("Let's play");
+        }
+
+        next.setOnAction(e -> {
+            if (page[0] < MAX_OPENING_PAGES) {
+                page[0]++;
+                updateView.run();
+            } else {
+                startGameWithLevel(levelNum);
+            }
+        });
+        applyHoverEffect(next);
+
+        letsPlay.setOnAction(e -> startGameWithLevel(levelNum));
+        applyHoverEffect(letsPlay);
+
+        HBox bottom = new HBox(12, next);
+        bottom.setAlignment(Pos.CENTER_RIGHT);
+        bottom.setPadding(new Insets(12));
+
+        BorderPane root = new BorderPane();
+        root.setCenter(pageView);
+        root.setBottom(bottom);
+        root.setStyle("-fx-background-color: #FFFFFF;");
+
+        // Rebuild bottom area when page changes to show letsPlay on final page
+        pageView.imageProperty().addListener((obs, old, nw) -> {
+            HBox b;
+            if (page[0] < MAX_OPENING_PAGES) {
                 b = new HBox(12, next);
             } else {
                 b = new HBox(12, letsPlay);
@@ -258,13 +344,11 @@ public class GameApp extends Application {
             levelButton.setPrefHeight(100);
             levelButton.setOnAction(e -> startGameWithLevel(levelNum));
             applyHoverEffect(levelButton);
-            levelButton.addEventHandler(MouseEvent.MOUSE_PRESSED, ev -> SoundManager.playClick());
             levelGrid.add(levelButton, (i - 1) % 5, (i - 1) / 5);
         }
 
         Button backButton = createMainButton("Back");
         backButton.setOnAction(e -> showStartScene());
-        backButton.addEventHandler(MouseEvent.MOUSE_PRESSED, ev -> SoundManager.playClick());
 
         VBox root = new VBox(20, title, levelGrid, backButton);
         root.setAlignment(Pos.TOP_CENTER);
@@ -316,7 +400,7 @@ public class GameApp extends Application {
         button.setTextFill(Color.WHITE);
         button.setStyle("-fx-background-color: #000000; -fx-background-radius: 40; -fx-border-radius: 40; -fx-border-color: white; -fx-border-width: 2;");
         applyHoverEffect(button);
-        button.addEventHandler(MouseEvent.MOUSE_PRESSED, ev -> SoundManager.playClick());
+        
         return button;
     }
 
@@ -334,8 +418,8 @@ public class GameApp extends Application {
             st.setToY(1.0);
             st.playFromStart();
         });
-        // play click sound when button is pressed (non-intrusive added handler)
-        button.addEventHandler(MouseEvent.MOUSE_PRESSED, ev -> SoundManager.playClick());
+        // action-based click sound: covers mouse click and keyboard activation
+        button.addEventHandler(ActionEvent.ACTION, ev -> SoundManager.playClick());
     }
 
     private void showGameScene(LevelId levelId) {
@@ -553,36 +637,57 @@ public class GameApp extends Application {
     }
 
     private void showLoseScene() {
-        Label titleLabel = new Label("You lost this level");
-        titleLabel.setFont(Font.font("System", 48));
-        titleLabel.setTextFill(Color.BLACK);
+        stopRenderLoop();
+        SoundManager.stopBackground();
 
-        Label msg = new Label("HP or Stamina reached 0 away from exit. Restart or return to menu.");
-        msg.setFont(Font.font(20));
-        msg.setTextFill(Color.BLACK);
+        javafx.scene.image.ImageView pageView = new javafx.scene.image.ImageView();
+        pageView.setPreserveRatio(true);
+        Image img = ImageLoader.loadImage("/PlayAgain/PlayAgain.png");
+        if (img != null) pageView.setImage(img);
 
-        Button restart = new Button("Restart Level");
-        restart.setFont(Font.font(28));
-        restart.setOnAction(e -> {
-            showGameScene(currentLevelId);
-        });
-        applyHoverEffect(restart);
+        Button again = new Button();
+        Image againImg = ImageLoader.loadImage("/PlayAgain/Play_Again_Button.png");
+        if (againImg != null) {
+            javafx.scene.image.ImageView aiv = new javafx.scene.image.ImageView(againImg);
+            aiv.setPreserveRatio(true);
+            aiv.setFitWidth(220);
+            again.setGraphic(aiv);
+        } else {
+            again.setText("Play Again");
+        }
+        again.setOnAction(e -> showGameScene(currentLevelId));
+        applyHoverEffect(again);
 
-        Button menu = new Button("Back to Menu");
-        menu.setFont(Font.font(28));
-        menu.setOnAction(e -> showStartScene());
-        applyHoverEffect(menu);
+        Button exit = new Button();
+        Image exitImg = ImageLoader.loadImage("/PlayAgain/Exist.png");
+        if (exitImg != null) {
+            javafx.scene.image.ImageView eiv = new javafx.scene.image.ImageView(exitImg);
+            eiv.setPreserveRatio(true);
+            eiv.setFitWidth(160);
+            exit.setGraphic(eiv);
+        } else {
+            exit.setText("Exit");
+        }
+        exit.setOnAction(e -> showStartScene());
+        applyHoverEffect(exit);
 
-        HBox buttons = new HBox(16, restart, menu);
-        buttons.setAlignment(Pos.CENTER);
+        HBox bottom = new HBox(12, again, exit);
+        bottom.setAlignment(Pos.CENTER);
+        bottom.setPadding(new Insets(12));
 
-        VBox root = new VBox(24, titleLabel, msg, buttons);
-        root.setAlignment(Pos.CENTER);
-        root.setPadding(new Insets(24));
+        StackPane centerPane = new StackPane(pageView);
+        centerPane.setAlignment(Pos.CENTER);
+
+        BorderPane root = new BorderPane();
+        root.setCenter(centerPane);
+        root.setBottom(bottom);
         root.setStyle("-fx-background-color: #FFFFFF;");
 
         Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         stage.setScene(scene);
+        // keep image centered and limit size so it does not fill the whole window
+        pageView.fitWidthProperty().bind(scene.widthProperty().multiply(0.6));
+        pageView.fitHeightProperty().bind(scene.heightProperty().multiply(0.6));
     }
 
     private HBox createHudRow(String icon, ProgressBar bar, Label text) {
@@ -1004,69 +1109,104 @@ public class GameApp extends Application {
 
     private void showGameCompletionScene() {
         stopRenderLoop();
+        SoundManager.stopBackground();
 
-        Label titleLabel = new Label("Congratulations!");
-        titleLabel.setFont(Font.font("System", 72));
-        titleLabel.setTextFill(Color.BLACK);
+        javafx.scene.image.ImageView pageView = new javafx.scene.image.ImageView();
+        pageView.setPreserveRatio(true);
+        pageView.setFitWidth(WINDOW_WIDTH * 0.8);
 
-        Label messageLabel = new Label("You have completed all levels!\nYou are now a true CEDT member!");
-        messageLabel.setFont(Font.font("System", 36));
-        messageLabel.setAlignment(Pos.CENTER);
-        messageLabel.setTextFill(Color.BLACK);
+        final int MAX_ENDING_PAGES = 2;
+        final int[] page = {1};
+        Runnable updateView = () -> {
+            String path = "/Ending/" + page[0] + ".png";
+            Image img = ImageLoader.loadImage(path);
+            if (img != null) pageView.setImage(img);
+        };
 
-        VBox rewardDisplay = new VBox(20);
-        rewardDisplay.setAlignment(Pos.CENTER);
-        rewardDisplay.setPadding(new Insets(30));
+        updateView.run();
 
-        Label rewardLabel = new Label("Final Reward Collection:");
-        rewardLabel.setFont(Font.font("System", 32));
-        rewardLabel.setTextFill(Color.BLACK);
-
-        HBox rewardsBox = new HBox(30);
-        rewardsBox.setAlignment(Pos.CENTER);
-        for (Reward reward : session.getCollectedRewards()) {
-            Label rewardName = new Label(reward.getName());
-            rewardName.setTextFill(Color.BLACK);
-            VBox rewardItem = new VBox(10, 
-                rewardName);
-            rewardItem.setAlignment(Pos.CENTER);
-            rewardItem.setPadding(new Insets(10));
-            rewardItem.setStyle("-fx-border-color: black; -fx-border-radius: 10; -fx-padding: 10;");
-            rewardsBox.getChildren().add(rewardItem);
+        Button next = new Button();
+        Image nextImg = ImageLoader.loadImage("/Ending/Next.png");
+        if (nextImg != null) {
+            javafx.scene.image.ImageView niv = new javafx.scene.image.ImageView(nextImg);
+            niv.setPreserveRatio(true);
+            niv.setFitWidth(160);
+            next.setGraphic(niv);
+        } else {
+            next.setText("Next");
         }
 
-        rewardDisplay.getChildren().addAll(rewardLabel, rewardsBox);
+        Button end = new Button();
+        Image endImg = ImageLoader.loadImage("/Ending/End.png");
+        if (endImg != null) {
+            javafx.scene.image.ImageView eiv = new javafx.scene.image.ImageView(endImg);
+            eiv.setPreserveRatio(true);
+            eiv.setFitWidth(220);
+            end.setGraphic(eiv);
+        } else {
+            end.setText("End");
+        }
 
-        Button menuButton = new Button("Back to Menu");
-        menuButton.setFont(Font.font(32));
-        menuButton.setPrefWidth(300);
-        menuButton.setTextFill(Color.WHITE);
-        menuButton.setStyle("-fx-background-color: #000000; -fx-background-radius: 20; -fx-border-color: white; -fx-border-width: 2;");
-        menuButton.setOnAction(e -> showStartScene());
-        applyHoverEffect(menuButton);
+        next.setOnAction(e -> {
+            if (page[0] < MAX_ENDING_PAGES) {
+                page[0]++;
+                updateView.run();
+            } else {
+                showStartScene();
+            }
+        });
+        applyHoverEffect(next);
 
-        VBox root = new VBox(40, titleLabel, messageLabel, rewardDisplay, menuButton);
-        root.setAlignment(Pos.TOP_CENTER);
-        root.setPadding(new Insets(40));
+        end.setOnAction(e -> showStartScene());
+        applyHoverEffect(end);
+
+        HBox bottom = new HBox(12, next);
+        bottom.setAlignment(Pos.CENTER_RIGHT);
+        bottom.setPadding(new Insets(12));
+
+        BorderPane root = new BorderPane();
+        root.setCenter(pageView);
+        root.setBottom(bottom);
         root.setStyle("-fx-background-color: #FFFFFF;");
+
+        pageView.imageProperty().addListener((obs, old, nw) -> {
+            HBox b;
+            if (page[0] < MAX_ENDING_PAGES) {
+                b = new HBox(12, next);
+            } else {
+                b = new HBox(12, end);
+            }
+            b.setAlignment(Pos.CENTER_RIGHT);
+            b.setPadding(new Insets(12));
+            root.setBottom(b);
+        });
 
         Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         stage.setScene(scene);
+        pageView.fitWidthProperty().bind(scene.widthProperty().multiply(0.8));
     }
 
-    private void drawPlayer(GraphicsContext g, double originX, double originY, double gridX, double gridY) {
-        double x = originX + gridX * TILE;
-        double y = originY + gridY * TILE;
-        double bobOffset = getIdleBobOffset((int) Math.round(gridX), (int) Math.round(gridY));
+    private double getIdleBobOffset(int gridX, int gridY) {
+        double time = (System.nanoTime() - animationStartNanos) / 1_000_000_000.0;
+        double phaseOffset = (gridX + gridY) * 0.35;
+        return Math.sin((time * 4.0) + phaseOffset) * 2.0;
+    }
 
-        String directionSuffix = switch (engine.getPlayer().getLastDirection()) {
+    private void drawPlayer(GraphicsContext g, double originX, double originY, double renderPlayerX, double renderPlayerY) {
+        double x = originX + renderPlayerX * TILE;
+        double y = originY + renderPlayerY * TILE;
+        double bobOffset = getIdleBobOffset((int)Math.round(renderPlayerX), (int)Math.round(renderPlayerY));
+
+        logic.game.Player player = engine.getPlayer();
+        String suffix = switch (player != null ? player.getLastDirection() : null) {
             case UP -> "Back.png";
             case DOWN -> "Front.png";
             case LEFT -> "Left.png";
             case RIGHT -> "Right.png";
+            default -> "Front.png";
         };
 
-        String imagePath = "/images/People/Player" + directionSuffix;
+        String imagePath = "/images/People/Player" + suffix;
         Image playerImage = ImageLoader.loadImage(imagePath);
 
         if (playerImage != null) {
@@ -1080,19 +1220,13 @@ public class GameApp extends Application {
                 g.drawImage(playerImage, drawX, drawY, targetWidth, targetHeight);
                 return;
             }
-        } else {
-            g.setFill(Color.web("#3b5ce4"));
-            g.fillRoundRect(x + 8, y + 8 + bobOffset, TILE - 16, TILE - 16, 18, 18);
-            g.setStroke(Color.BLACK);
-            g.strokeRoundRect(x + 8, y + 8 + bobOffset, TILE - 16, TILE - 16, 18, 18);
-            g.setFill(Color.WHITE);
-            g.fillText("P", x + 28, y + 38 + bobOffset);
         }
-    }
 
-    private double getIdleBobOffset(int gridX, int gridY) {
-        double time = (System.nanoTime() - animationStartNanos) / 1_000_000_000.0;
-        double phaseOffset = (gridX + gridY) * 0.35;
-        return Math.sin((time * 4.0) + phaseOffset) * 2.0;
+        g.setFill(Color.web("#3b5ce4"));
+        g.fillRoundRect(x + 8, y + 8 + bobOffset, TILE - 16, TILE - 16, 18, 18);
+        g.setStroke(Color.BLACK);
+        g.strokeRoundRect(x + 8, y + 8 + bobOffset, TILE - 16, TILE - 16, 18, 18);
+        g.setFill(Color.WHITE);
+        g.fillText("P", x + 28, y + 38 + bobOffset);
     }
 }

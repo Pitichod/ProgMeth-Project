@@ -6,6 +6,7 @@ import java.net.URL;
 
 public class SoundManager {
     private static MediaPlayer bgPlayer;
+    private static MediaPlayer typePlayer;
 
     private static Media loadMedia(String path) {
         try {
@@ -82,5 +83,40 @@ public class SoundManager {
 
     public static void playHurt() {
         playOneShot("/sound/hurt.mp3", 1.0);
+    }
+
+    public static void playType() {
+        try {
+            // stop previous if any
+            if (typePlayer != null) {
+                typePlayer.stop();
+                typePlayer.dispose();
+                typePlayer = null;
+            }
+            Media m = loadMedia("/sound/type.mp3");
+            if (m == null) return;
+            typePlayer = new MediaPlayer(m);
+            typePlayer.setVolume(0.9);
+            typePlayer.setOnEndOfMedia(() -> {
+                if (typePlayer != null) {
+                    typePlayer.stop();
+                    typePlayer.dispose();
+                    typePlayer = null;
+                }
+            });
+            typePlayer.play();
+        } catch (Exception ignored) {
+        }
+    }
+
+    public static void stopType() {
+        try {
+            if (typePlayer != null) {
+                typePlayer.stop();
+                typePlayer.dispose();
+                typePlayer = null;
+            }
+        } catch (Exception ignored) {
+        }
     }
 }
