@@ -1,12 +1,15 @@
 package objects.obstacles;
 
-public class Table extends Chair {
+import interfaces.Moveable;
+import logic.components.Direction;
+import objects.BaseObject;
+
+public class Table extends BaseObject implements Moveable {
     private final int sizeInBlocks;
     private final String orientation;
 
     public Table(int x, int y, String orientation) {
-        super(x, y);
-        setName("Table");
+        super("Table", x, y);
         this.sizeInBlocks = 2;
         this.orientation = orientation;
     }
@@ -23,8 +26,13 @@ public class Table extends Chair {
         return orientation;
     }
 
-    @Override
     public int getMoveCost() {
         return 2;
+    }
+
+    @Override
+    public void move(Direction direction) {
+        setX(getX() + direction.getDx());
+        setY(getY() + direction.getDy());
     }
 }

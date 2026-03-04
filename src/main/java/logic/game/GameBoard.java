@@ -20,12 +20,13 @@ import objects.items.RobuxGiftCard;
 import objects.obstacles.Cable;
 import objects.obstacles.Chair;
 import objects.obstacles.Table;
+import objects.BaseObject;
 
 public class GameBoard {
     private final int width;
     private final int height;
     private final boolean[][] walls;
-    private final List<Chair> moveableObstacles = new ArrayList<>();
+    private final List<BaseObject> moveableObstacles = new ArrayList<>();
     private final List<Cable> cables = new ArrayList<>();
     private final List<Human> humans = new ArrayList<>();
     private final List<BaseItem> items = new ArrayList<>();
@@ -226,7 +227,7 @@ public class GameBoard {
         return doorY;
     }
 
-    public List<Chair> getMoveableObstacles() {
+    public List<BaseObject> getMoveableObstacles() {
         return moveableObstacles;
     }
 
@@ -251,8 +252,8 @@ public class GameBoard {
         return null;
     }
 
-    public Chair findMoveableObstacleAt(int x, int y) {
-        for (Chair obstacle : moveableObstacles) {
+    public BaseObject findMoveableObstacleAt(int x, int y) {
+        for (BaseObject obstacle : moveableObstacles) {
             if (obstacle.getX() == x && obstacle.getY() == y) {
                 return obstacle;
             }

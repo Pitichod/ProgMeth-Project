@@ -810,7 +810,7 @@ public class GameApp extends Application {
         int playerRow = Math.max(0, Math.min(board.getHeight() - 1, (int) Math.round(renderPlayerY)));
 
         for (int row = 0; row < board.getHeight(); row++) {
-            for (Chair obstacle : board.getMoveableObstacles()) {
+            for (objects.BaseObject obstacle : board.getMoveableObstacles()) {
                 if (obstacle.getY() == row) {
                     drawObstacle(g, originX, originY, obstacle);
                 }
@@ -870,7 +870,7 @@ public class GameApp extends Application {
         }
     }
 
-    private void drawObstacle(GraphicsContext g, double originX, double originY, Chair obstacle) {
+    private void drawObstacle(GraphicsContext g, double originX, double originY, objects.BaseObject obstacle) {
         double x = originX + obstacle.getX() * TILE;
         double y = originY + obstacle.getY() * TILE;
 
