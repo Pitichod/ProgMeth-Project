@@ -1133,6 +1133,8 @@ public class GameApp extends Application {
             if (nextLevel != null) {
                 showGameScene(nextLevel);
             } else {
+                // play ending sound 1 when advancing from last reward
+                SoundManager.playEnding(1);
                 showGameCompletionScene();
             }
         });
