@@ -46,10 +46,11 @@ import rewards.Reward;
 
 public class GameApp extends Application {
     private static final int WINDOW_WIDTH = 1200;
-    private static final int WINDOW_HEIGHT = 800;
+    private static final int WINDOW_HEIGHT = 900;
     private static final int TILE = 64;
     private static final int HUMAN_REACTION_RANGE = 1;
     private static final long PLAYER_MOVE_ANIM_NANOS = 120_000_000L;
+    private static final long EASTER_EGG_MAX_GAP_NANOS = 1_200_000_000L;
 
     private Stage stage;
     private GameEngine engine;
@@ -74,6 +75,8 @@ public class GameApp extends Application {
     private double moveToY;
     private long playerMoveStartNanos;
     private boolean playerMoveAnimating;
+    private int easterEggProgress;
+    private long easterEggLastInputNanos;
 
     @Override
     public void start(Stage primaryStage) {
@@ -256,6 +259,13 @@ public class GameApp extends Application {
         stopRenderLoop();
         SoundManager.stopBackground();
 
+        Image openingBg = ImageLoader.loadImage("/Openning/bg.png");
+        javafx.scene.image.ImageView bgView = null;
+        if (openingBg != null) {
+            bgView = new javafx.scene.image.ImageView(openingBg);
+            bgView.setPreserveRatio(false);
+        }
+
         javafx.scene.image.ImageView pageView = new javafx.scene.image.ImageView();
         pageView.setPreserveRatio(true);
         pageView.setFitWidth(WINDOW_WIDTH * 0.8);
@@ -315,10 +325,16 @@ public class GameApp extends Application {
         bottom.setAlignment(Pos.CENTER_RIGHT);
         bottom.setPadding(new Insets(12));
 
-        BorderPane root = new BorderPane();
-        root.setCenter(pageView);
-        root.setBottom(bottom);
-        root.setStyle("-fx-background-color: #FFFFFF;");
+        BorderPane content = new BorderPane();
+        content.setCenter(pageView);
+        content.setBottom(bottom);
+        content.setStyle("-fx-background-color: transparent;");
+
+        StackPane root = new StackPane();
+        if (bgView != null) {
+            root.getChildren().add(bgView);
+        }
+        root.getChildren().add(content);
 
         // Rebuild bottom area when page changes to show letsPlay on final page
         pageView.imageProperty().addListener((obs, old, nw) -> {
@@ -330,11 +346,15 @@ public class GameApp extends Application {
             }
             b.setAlignment(Pos.CENTER_RIGHT);
             b.setPadding(new Insets(12));
-            root.setBottom(b);
+            content.setBottom(b);
         });
 
         Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         stage.setScene(scene);
+        if (bgView != null) {
+            bgView.fitWidthProperty().bind(scene.widthProperty());
+            bgView.fitHeightProperty().bind(scene.heightProperty());
+        }
         pageView.fitWidthProperty().bind(scene.widthProperty().multiply(0.8));
     }
 
@@ -440,6 +460,8 @@ public class GameApp extends Application {
         stopRenderLoop();
         engine = new GameEngine(session, levelId);
         animationStartNanos = System.nanoTime();
+        easterEggProgress = 0;
+        easterEggLastInputNanos = 0L;
         // reset game-over flag for this level and start background music
         this.currentLevelId = levelId;
         this.gameOverHandled = false;
@@ -512,6 +534,9 @@ public class GameApp extends Application {
         Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         scene.setOnKeyPressed(event -> {
             KeyCode code = event.getCode();
+            if (handleEasterEggKey(code)) {
+                return;
+            }
             if (code == KeyCode.UP || code == KeyCode.W) {
                 handlePlayerMove(Direction.UP);
             } else if (code == KeyCode.DOWN || code == KeyCode.S) {
@@ -560,6 +585,48 @@ public class GameApp extends Application {
         startRenderLoop();
         gameCanvas.setFocusTraversable(true);
         gameCanvas.requestFocus();
+    }
+
+    private boolean handleEasterEggKey(KeyCode code) {
+        long now = System.nanoTime();
+        if (easterEggProgress > 0 && (now - easterEggLastInputNanos) > EASTER_EGG_MAX_GAP_NANOS) {
+            easterEggProgress = 0;
+        }
+
+        if (matchesEasterEggStep(easterEggProgress, code)) {
+            easterEggProgress++;
+            easterEggLastInputNanos = now;
+
+            if (easterEggProgress >= 10) {
+                easterEggProgress = 0;
+                easterEggLastInputNanos = 0L;
+                SoundManager.playEnding(1);
+                showGameCompletionScene();
+                return true;
+            }
+            return false;
+        }
+
+        if (matchesEasterEggStep(0, code)) {
+            easterEggProgress = 1;
+            easterEggLastInputNanos = now;
+        } else {
+            easterEggProgress = 0;
+            easterEggLastInputNanos = 0L;
+        }
+        return false;
+    }
+
+    private boolean matchesEasterEggStep(int step, KeyCode code) {
+        return switch (step) {
+            case 0, 1 -> code == KeyCode.UP || code == KeyCode.W;
+            case 2, 3 -> code == KeyCode.DOWN || code == KeyCode.S;
+            case 4, 6 -> code == KeyCode.LEFT || code == KeyCode.A;
+            case 5, 7 -> code == KeyCode.RIGHT || code == KeyCode.D;
+            case 8 -> code == KeyCode.A;
+            case 9 -> code == KeyCode.B;
+            default -> false;
+        };
     }
 
     private void handlePlayerMove(Direction direction) {
@@ -1148,6 +1215,13 @@ public class GameApp extends Application {
         stopRenderLoop();
         SoundManager.stopBackground();
 
+        Image endingBg = ImageLoader.loadImage("/Ending/bg.png");
+        javafx.scene.image.ImageView bgView = null;
+        if (endingBg != null) {
+            bgView = new javafx.scene.image.ImageView(endingBg);
+            bgView.setPreserveRatio(false);
+        }
+
         javafx.scene.image.ImageView pageView = new javafx.scene.image.ImageView();
         pageView.setPreserveRatio(true);
         pageView.setFitWidth(WINDOW_WIDTH * 0.8);
@@ -1206,10 +1280,16 @@ public class GameApp extends Application {
         bottom.setAlignment(Pos.CENTER_RIGHT);
         bottom.setPadding(new Insets(12));
 
-        BorderPane root = new BorderPane();
-        root.setCenter(pageView);
-        root.setBottom(bottom);
-        root.setStyle("-fx-background-color: #FFFFFF;");
+        BorderPane content = new BorderPane();
+        content.setCenter(pageView);
+        content.setBottom(bottom);
+        content.setStyle("-fx-background-color: transparent;");
+
+        StackPane root = new StackPane();
+        if (bgView != null) {
+            root.getChildren().add(bgView);
+        }
+        root.getChildren().add(content);
 
         pageView.imageProperty().addListener((obs, old, nw) -> {
             HBox b;
@@ -1220,11 +1300,15 @@ public class GameApp extends Application {
             }
             b.setAlignment(Pos.CENTER_RIGHT);
             b.setPadding(new Insets(12));
-            root.setBottom(b);
+            content.setBottom(b);
         });
 
         Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         stage.setScene(scene);
+        if (bgView != null) {
+            bgView.fitWidthProperty().bind(scene.widthProperty());
+            bgView.fitHeightProperty().bind(scene.heightProperty());
+        }
         pageView.fitWidthProperty().bind(scene.widthProperty().multiply(0.8));
     }
 

@@ -9,6 +9,6 @@ public class Parabola extends BaseItem {
 
     @Override
     protected void consume(Player player) {
-        player.heal(1);
+        player.heal(2);
     }
 }

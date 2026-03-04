@@ -1,10 +1,8 @@
 package objects.obstacles;
 
-import interfaces.Moveable;
-import logic.components.Direction;
 import objects.BaseObject;
 
-public class Table extends BaseObject implements Moveable {
+public class Table extends BaseObject {
     private final int sizeInBlocks;
     private final String orientation;
 
@@ -30,9 +28,4 @@ public class Table extends BaseObject implements Moveable {
         return 2;
     }
 
-    @Override
-    public void move(Direction direction) {
-        setX(getX() + direction.getDx());
-        setY(getY() + direction.getDy());
-    }
 }

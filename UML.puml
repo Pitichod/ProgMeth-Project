@@ -1,0 +1,180 @@
+@startuml
+abstract class objects.items.BaseItem {
+- boolean consumed
+# <<Create>> BaseItem(String,int,int)
++ boolean isConsumed()
++ void onPick(Player)
+# {abstract}void consume(Player)
+}
+
+
+class objects.TA {
++ <<Create>> TA(int,int)
++ void onAttackedBy(Player)
+}
+
+interface interfaces.Pickable {
+~ void onPick(Player)
+}
+
+class rewards.ChatGPTPro {
++ <<Create>> ChatGPTPro()
+}
+
+class objects.Teacher {
++ <<Create>> Teacher(int,int)
++ void onAttackedBy(Player)
+}
+
+class rewards.Mouse {
++ <<Create>> Mouse()
+}
+
+class objects.items.RobuxGiftCard {
++ <<Create>> RobuxGiftCard(int,int)
+# void consume(Player)
+}
+
+class objects.obstacles.Table {
+- int sizeInBlocks
+- String orientation
++ <<Create>> Table(int,int,String)
++ <<Create>> Table(int,int)
++ int getSizeInBlocks()
++ String getOrientation()
++ int getMoveCost()
++ void move(Direction)
+}
+
+
+class objects.obstacles.Chair {
+- String orientation
++ <<Create>> Chair(int,int,String)
++ <<Create>> Chair(int,int)
++ String getOrientation()
++ int getMoveCost()
++ void move(Direction)
+}
+
+
+class rewards.Notebook {
++ <<Create>> Notebook()
+}
+
+class rewards.Glasses {
++ <<Create>> Glasses()
+}
+
+abstract class objects.Human {
+- int health
+- boolean active
+- Direction facing
+- long nextFaceChangeAt
+# <<Create>> Human(String,int,int,int)
++ int getHealth()
++ void setHealth(int)
++ boolean isActive()
++ void setActive(boolean)
++ void interact(Player)
++ Direction getFacing()
++ void setFacing(Direction)
++ long getNextFaceChangeAt()
++ void setNextFaceChangeAt(long)
+}
+
+
+class objects.Introvert {
++ <<Create>> Introvert(int,int)
++ void onAttackedBy(Player)
+}
+
+interface interfaces.Attackable {
+~ void onAttackedBy(Player)
+}
+
+interface interfaces.Moveable {
+~ int getMoveCost()
+~ void move(Direction)
+}
+
+abstract class objects.BaseObject {
+- String name
+- int x
+- int y
+# <<Create>> BaseObject(String,int,int)
++ String getName()
++ void setName(String)
++ int getX()
++ void setX(int)
++ int getY()
++ void setY(int)
+}
+
+
+class objects.Extrovert {
++ <<Create>> Extrovert(int,int)
++ void onAttackedBy(Player)
+}
+
+class objects.items.Caffeine {
++ <<Create>> Caffeine(int,int)
+# void consume(Player)
+}
+
+class rewards.Backpack {
++ <<Create>> Backpack()
+}
+
+class objects.obstacles.Cable {
+- String spriteName
++ <<Create>> Cable(int,int)
++ <<Create>> Cable(int,int,String)
++ String getSpriteName()
++ void interact(Player)
+}
+
+
+abstract class rewards.Reward {
+- String name
+- int stageNumber
+# <<Create>> Reward(String,int)
++ String getName()
++ int getStageNumber()
+}
+
+
+class objects.items.Parabola {
++ <<Create>> Parabola(int,int)
+# void consume(Player)
+}
+
+interface interfaces.Interactable {
+~ void interact(Player)
+}
+
+
+
+interfaces.Pickable <|.. objects.items.BaseItem
+objects.BaseObject <|-- objects.items.BaseItem
+objects.Human <|-- objects.TA
+rewards.Reward <|-- rewards.ChatGPTPro
+objects.Human <|-- objects.Teacher
+rewards.Reward <|-- rewards.Mouse
+objects.items.BaseItem <|-- objects.items.RobuxGiftCard
+interfaces.Moveable <|.. objects.obstacles.Table
+objects.BaseObject <|-- objects.obstacles.Table
+interfaces.Moveable <|.. objects.obstacles.Chair
+objects.BaseObject <|-- objects.obstacles.Chair
+rewards.Reward <|-- rewards.Notebook
+rewards.Reward <|-- rewards.Glasses
+interfaces.Interactable <|.. objects.Human
+interfaces.Attackable <|.. objects.Human
+objects.BaseObject <|-- objects.Human
+objects.Human <|-- objects.Introvert
+objects.Human <|-- objects.Extrovert
+objects.items.BaseItem <|-- objects.items.Caffeine
+rewards.Reward <|-- rewards.Backpack
+interfaces.Interactable <|.. objects.obstacles.Cable
+objects.BaseObject <|-- objects.obstacles.Cable
+objects.items.BaseItem <|-- objects.items.Parabola
+@enduml

@@ -4,6 +4,7 @@ import logic.components.Direction;
 import objects.Human;
 import objects.items.BaseItem;
 import objects.obstacles.Cable;
+import objects.obstacles.Chair;
 import objects.BaseObject;
 import interfaces.Moveable;
 import rewards.Reward;
@@ -78,6 +79,10 @@ public class GameEngine {
             int pushToY = targetY + direction.getDy();
             if (!board.isInBounds(pushToX, pushToY) || board.isBlockingCell(pushToX, pushToY) || board.isDoor(pushToX, pushToY)) {
                 statusMessage = "Cannot push this obstacle.";
+                return;
+            }
+            if (found instanceof Chair && board.findCableAt(pushToX, pushToY) != null) {
+                statusMessage = "Cannot push chair onto cable.";
                 return;
             }
             int moveCost = obstacle.getMoveCost();

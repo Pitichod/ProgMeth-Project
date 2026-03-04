@@ -12,8 +12,7 @@ public class GameSession {
 
     public void startLevel(LevelId levelId) {
         currentLevel = LevelConfig.fromLevel(levelId);
-        // Tests and core mechanics expect starting health to be 5 for each level
-        player = new Player(5, currentLevel.getDefaultStamina(), 0, 0);
+        player = new Player(currentLevel.getDefaultHealth(), currentLevel.getDefaultStamina(), 0, 0);
     }
 
     public Player getPlayer() {

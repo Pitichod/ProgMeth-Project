@@ -9,8 +9,7 @@ public class TA extends Human {
 
     @Override
     public void onAttackedBy(Player player) {
-        // If player's health is not full, they immediately lose (set to 0).
-        // Otherwise reduce to 1.
+        setActive(true);
         if (player.getHealth() < player.getMaxHealth()) {
             player.setHealth(0);
         } else {
