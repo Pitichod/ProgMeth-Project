@@ -1,10 +1,8 @@
-../ProjectProgmeth/.gradle
-build/classes/
-build/generated/
-build/reports/
-build/resources/
-build/test-results/
-build/tmp/
+.gradle/
+build/*
+!build/libs/
+!build/distributions/
+!build/scripts/
 
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
