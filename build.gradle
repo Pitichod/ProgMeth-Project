@@ -26,6 +26,7 @@ dependencies {
 
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 }
 
 javafx {
@@ -41,6 +42,9 @@ run {
     standardInput = System.in
 }
 
+compileJava.options.encoding = 'UTF-8'
+compileTestJava.options.encoding = 'UTF-8'
+
 test {
     useJUnitPlatform()
 
@@ -48,6 +52,13 @@ test {
     systemProperty 'testfx.robot', 'glass'
     systemProperty 'testfx.setup.timeout', '60000'
     systemProperty 'testfx.launch.timeout', '60000'
+
+    // Show individual test names in console output
+    testLogging {
+        events 'passed', 'failed', 'skipped'
+        showStandardStreams = false
+        exceptionFormat = 'full'
+    }
 }
 
 // Configure the JAR task to include source code
