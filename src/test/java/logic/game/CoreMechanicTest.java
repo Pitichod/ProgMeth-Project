@@ -11,10 +11,18 @@ import objects.items.Parabola;
 import objects.items.RobuxGiftCard;
 import org.junit.jupiter.api.Test;
 
+/**
+ * ทดสอบกลไกหลัก (core mechanics) ระหว่างคลาสต่างๆ
+ * ครอบคลุม: เริ่มด่าน, โจมตีศัตรู (Extrovert, TA), เก็บไอเทม (Caffeine, Parabola, RobuxGiftCard)
+ *
+ * เหตุผล: เป็น integration test ระดับ unit ที่ตรวจว่า Player + Enemy/Item
+ * ทำงานร่วมกันถูกต้องตามกติกาเกม
+ */
 class CoreMechanicTest {
 
     @Test
-    void startingLevelShouldResetHealthToFive() {
+    void startingLevelShouldUseConfigHealth() {
+        // ตรวจว่า startLevel ใช้ HP จาก LevelConfig (ISCALE_403 = 5 HP, 20 Stamina)
         GameSession session = new GameSession();
 
         session.startLevel(LevelId.ISCALE_403);
