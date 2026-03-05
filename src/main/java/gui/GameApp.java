@@ -15,6 +15,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -527,11 +528,13 @@ public class GameApp extends Application {
         Button muteButton = new Button();
         muteButton.setPrefSize(40, 40);
         muteButton.setStyle("-fx-font-size: 18; -fx-cursor: hand;");
+        muteButton.setFocusTraversable(false);
         updateMuteButtonText(muteButton);
         muteButton.setOnAction(e -> {
             SoundManager.toggleMute();
             updateMuteButtonText(muteButton);
             SoundManager.playClick();
+            gameCanvas.requestFocus();
         });
 
         Region spacer = new Region();
@@ -570,7 +573,7 @@ public class GameApp extends Application {
         root.setStyle("-fx-background-color: #FFFFFF;");
 
         Scene scene = new Scene(root, currentWidth(), currentHeight());
-        scene.setOnKeyPressed(event -> {
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             KeyCode code = event.getCode();
             if (handleEasterEggKey(code)) {
                 return;

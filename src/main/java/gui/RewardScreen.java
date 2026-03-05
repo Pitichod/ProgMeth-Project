@@ -105,7 +105,7 @@ public class RewardScreen {
         bottom.setPadding(new Insets(24));
 
         VBox root = new VBox(30, centerView, bottom);
-        root.setAlignment(Pos.TOP_CENTER);
+        root.setAlignment(Pos.CENTER);
         root.setPadding(new Insets(24));
         root.setStyle("-fx-background-color: #FFFFFF;");
 

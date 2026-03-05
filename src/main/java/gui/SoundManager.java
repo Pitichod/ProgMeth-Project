@@ -1,5 +1,6 @@
 package gui;
 
+import javafx.scene.media.AudioClip;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import java.net.URL;
@@ -10,10 +11,32 @@ public class SoundManager {
     private static MediaPlayer openingPlayer;
     private static MediaPlayer endingPlayer;
     
+    // Pre-loaded AudioClips for short sound effects
+    private static final AudioClip walkClip = loadClip("/sound/walk.mp3");
+    private static final AudioClip clickClip = loadClip("/sound/click.mp3");
+    private static final AudioClip winClip = loadClip("/sound/win.mp3");
+    private static final AudioClip loseClip = loadClip("/sound/lose.mp3");
+    private static final AudioClip pickUpClip = loadClip("/sound/pick_up_item.mp3");
+    private static final AudioClip hurtClip = loadClip("/sound/hurt.mp3");
+
     // Master volume control (0.0 to 1.0)
     private static double masterVolume = 0.6;
     private static double volumeBeforeMute = 0.6; // Store volume before mute
     private static boolean isMuted = false;
+
+    private static AudioClip loadClip(String path) {
+        try {
+            URL res = SoundManager.class.getResource(path);
+            if (res == null) {
+                System.err.println("AudioClip resource not found: " + path);
+                return null;
+            }
+            return new AudioClip(res.toExternalForm());
+        } catch (Exception e) {
+            System.err.println("Failed to load AudioClip: " + path + " -> " + e);
+            return null;
+        }
+    }
 
     private static Media loadMedia(String path) {
         try {
@@ -57,31 +80,21 @@ public class SoundManager {
         }
     }
 
-    private static void playOneShot(String path, double volume) {
-        try {
-            Media m = loadMedia(path);
-            if (m == null) return;
-            MediaPlayer p = new MediaPlayer(m);
-            p.setVolume(volume);
-            p.setOnEndOfMedia(() -> {
-                p.stop();
-                p.dispose();
-            });
-            p.play();
-        } catch (Exception ignored) {
-        }
+    private static void playClip(AudioClip clip, double volume) {
+        if (clip == null) return;
+        clip.play(volume * masterVolume);
     }
 
     public static void playClick() {
-        playOneShot("/sound/click.mp3", 1.0);
+        playClip(clickClip, 1.0);
     }
 
     public static void playWin() {
-        playOneShot("/sound/win.mp3", 1.0);
+        playClip(winClip, 1.0);
     }
 
     public static void playLose() {
-        playOneShot("/sound/lose.mp3", 1.0);
+        playClip(loseClip, 1.0);
     }
 
     public static void playOpening(int page) {
@@ -158,15 +171,15 @@ public class SoundManager {
     }
 
     public static void playWalk() {
-        playOneShot("/sound/walk.mp3", 0.9);
+        playClip(walkClip, 0.9);
     }
 
     public static void playPickUp() {
-        playOneShot("/sound/pick_up_item.mp3", 1.0);
+        playClip(pickUpClip, 1.0);
     }
 
     public static void playHurt() {
-        playOneShot("/sound/hurt.mp3", 1.0);
+        playClip(hurtClip, 1.0);
     }
 
     public static void playType() {
