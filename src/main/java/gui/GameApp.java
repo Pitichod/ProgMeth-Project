@@ -140,6 +140,17 @@ public class GameApp extends Application {
         HBox buttons = new HBox(36, pressToStart, howTo);
         buttons.setAlignment(Pos.CENTER);
 
+        // Create mute button for main menu
+        Button mainMenuMuteButton = new Button();
+        mainMenuMuteButton.setPrefSize(40, 40);
+        mainMenuMuteButton.setStyle("-fx-font-size: 18; -fx-cursor: hand;");
+        updateMuteButtonText(mainMenuMuteButton);
+        mainMenuMuteButton.setOnAction(e -> {
+            SoundManager.toggleMute();
+            updateMuteButtonText(mainMenuMuteButton);
+            SoundManager.playClick();
+        });
+
         StackPane root = new StackPane();
         // remove explicit background so image can fill entire window
         if (mainView != null) root.getChildren().add(mainView);
@@ -149,8 +160,14 @@ public class GameApp extends Application {
         buttonBox.setStyle("-fx-background-color: rgba(255,255,255,0.95); -fx-border-color: black; -fx-border-width: 3; -fx-padding: 18;");
         buttonBox.setMaxWidth(800);
 
+        // Create top-right mute button area
+        HBox topRightBox = new HBox(mainMenuMuteButton);
+        topRightBox.setAlignment(Pos.TOP_RIGHT);
+        topRightBox.setPadding(new Insets(15, 20, 0, 0));
+
         VBox overlay = new VBox();
         overlay.setAlignment(Pos.TOP_CENTER);
+        overlay.getChildren().add(topRightBox);
         overlay.getChildren().add(buttonBox);
         root.getChildren().add(overlay);
 
@@ -487,13 +504,13 @@ public class GameApp extends Application {
 
         // Left-aligned compact HUD showing only remaining values
         Label hpText = new Label("HP : ");
-        hpText.setFont(Font.font(20));
-        hpLabel.setFont(Font.font(20));
+        hpText.setFont(Font.loadFont(GameApp.class.getResourceAsStream("/fonts/Grandstander-Bold.ttf"), 28));
+        hpLabel.setFont(Font.loadFont(GameApp.class.getResourceAsStream("/fonts/Grandstander-Bold.ttf"), 28));
         hpLabel.setTextFill(Color.BLACK);
 
         Label stText = new Label("Stamina : ");
-        stText.setFont(Font.font(20));
-        staminaLabel.setFont(Font.font(20));
+        stText.setFont(Font.loadFont(GameApp.class.getResourceAsStream("/fonts/Grandstander-Bold.ttf"), 28));
+        staminaLabel.setFont(Font.loadFont(GameApp.class.getResourceAsStream("/fonts/Grandstander-Bold.ttf"), 28));
         staminaLabel.setTextFill(Color.BLACK);
 
         HBox stRow = new HBox(6, stText, staminaLabel);
@@ -506,12 +523,24 @@ public class GameApp extends Application {
         leftHud.setAlignment(Pos.CENTER_LEFT);
         leftHud.setPadding(new Insets(8, 0, 8, 20));
 
+        // Create mute button
+        Button muteButton = new Button();
+        muteButton.setPrefSize(40, 40);
+        muteButton.setStyle("-fx-font-size: 18; -fx-cursor: hand;");
+        updateMuteButtonText(muteButton);
+        muteButton.setOnAction(e -> {
+            SoundManager.toggleMute();
+            updateMuteButtonText(muteButton);
+            SoundManager.playClick();
+        });
+
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox topHud = new HBox(leftHud, spacer, levelLabel);
+        HBox topHud = new HBox(leftHud, spacer, levelLabel, muteButton);
         topHud.setAlignment(Pos.CENTER_LEFT);
         topHud.setPadding(new Insets(4, 20, 4, 0));
+        topHud.setSpacing(10);
 
         // Size canvas to fit the board if the board is larger than the default view
         GameBoard board = engine.getBoard();
@@ -530,6 +559,7 @@ public class GameApp extends Application {
         statusLabel.setPadding(new Insets(4, 22, 12, 22));
         hpLabel.setTextFill(Color.BLACK);
         staminaLabel.setTextFill(Color.BLACK);
+        levelLabel.setFont(Font.loadFont(GameApp.class.getResourceAsStream("/fonts/Grandstander-Bold.ttf"), 32));
         levelLabel.setTextFill(Color.BLACK);
         statusLabel.setTextFill(Color.BLACK);
 
@@ -1364,5 +1394,37 @@ public class GameApp extends Application {
         g.strokeRoundRect(x + 8, y + 8 + bobOffset, TILE - 16, TILE - 16, 18, 18);
         g.setFill(Color.WHITE);
         g.fillText("P", x + 28, y + 38 + bobOffset);
+    }
+
+    private void updateMuteButtonText(Button muteButton) {
+        if (SoundManager.isMutedStatus()) {
+            // Sound off - muted
+            Image speakerOffImg = ImageLoader.loadImage("/images/icons/SoundOff.png");
+            if (speakerOffImg != null) {
+                javafx.scene.image.ImageView iv = new javafx.scene.image.ImageView(speakerOffImg);
+                iv.setPreserveRatio(true);
+                iv.setFitWidth(30);
+                iv.setFitHeight(30);
+                muteButton.setGraphic(iv);
+                muteButton.setText("");
+            } else {
+                muteButton.setText("🔇");
+            }
+            muteButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-opacity: 0.6; -fx-padding: 5;");
+        } else {
+            // Sound on - unmuted
+            Image speakerOnImg = ImageLoader.loadImage("/images/icons/soundOn.png");
+            if (speakerOnImg != null) {
+                javafx.scene.image.ImageView iv = new javafx.scene.image.ImageView(speakerOnImg);
+                iv.setPreserveRatio(true);
+                iv.setFitWidth(30);
+                iv.setFitHeight(30);
+                muteButton.setGraphic(iv);
+                muteButton.setText("");
+            } else {
+                muteButton.setText("🔊");
+            }
+            muteButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-opacity: 1.0; -fx-padding: 5;");
+        }
     }
 }
