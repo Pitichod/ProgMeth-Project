@@ -109,7 +109,7 @@ public class RewardScreen {
         root.setPadding(new Insets(24));
         root.setStyle("-fx-background-color: #FFFFFF;");
 
-        Scene scene = new Scene(root, 1200, 700);
+        Scene scene = new Scene(root, 1200, 900);
         // Bind reward image size to scene width for responsiveness
         centerView.fitWidthProperty().bind(scene.widthProperty().multiply(0.6));
         return scene;
