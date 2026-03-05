@@ -78,6 +78,14 @@ public class GameApp extends Application {
     private int easterEggProgress;
     private long easterEggLastInputNanos;
 
+    private double currentWidth() {
+        return stage.isShowing() && stage.getScene() != null ? stage.getScene().getWidth() : WINDOW_WIDTH;
+    }
+
+    private double currentHeight() {
+        return stage.isShowing() && stage.getScene() != null ? stage.getScene().getHeight() : WINDOW_HEIGHT;
+    }
+
     @Override
     public void start(Stage primaryStage) {
         this.stage = primaryStage;
@@ -146,7 +154,7 @@ public class GameApp extends Application {
         overlay.getChildren().add(buttonBox);
         root.getChildren().add(overlay);
 
-        Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        Scene scene = new Scene(root, currentWidth(), currentHeight());
         stage.setScene(scene);
 
         if (mainView != null) {
@@ -250,7 +258,7 @@ public class GameApp extends Application {
             root.setBottom(b);
         });
 
-        Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        Scene scene = new Scene(root, currentWidth(), currentHeight());
         stage.setScene(scene);
         pageView.fitWidthProperty().bind(scene.widthProperty().multiply(0.8));
     }
@@ -349,7 +357,7 @@ public class GameApp extends Application {
             content.setBottom(b);
         });
 
-        Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        Scene scene = new Scene(root, currentWidth(), currentHeight());
         stage.setScene(scene);
         if (bgView != null) {
             bgView.fitWidthProperty().bind(scene.widthProperty());
@@ -389,7 +397,7 @@ public class GameApp extends Application {
         root.setPadding(new Insets(20));
         root.setStyle("-fx-background-color: #FFFFFF;");
 
-        Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        Scene scene = new Scene(root, currentWidth(), currentHeight());
         stage.setScene(scene);
     }
 
@@ -531,7 +539,7 @@ public class GameApp extends Application {
         root.setBottom(statusLabel);
         root.setStyle("-fx-background-color: #FFFFFF;");
 
-        Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        Scene scene = new Scene(root, currentWidth(), currentHeight());
         scene.setOnKeyPressed(event -> {
             KeyCode code = event.getCode();
             if (handleEasterEggKey(code)) {
@@ -784,7 +792,7 @@ public class GameApp extends Application {
         root.setBottom(bottom);
         root.setStyle("-fx-background-color: #FFFFFF;");
 
-        Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        Scene scene = new Scene(root, currentWidth(), currentHeight());
         stage.setScene(scene);
         // keep image centered and limit size so it does not fill the whole window
         pageView.fitWidthProperty().bind(scene.widthProperty().multiply(0.6));
@@ -1303,7 +1311,7 @@ public class GameApp extends Application {
             content.setBottom(b);
         });
 
-        Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        Scene scene = new Scene(root, currentWidth(), currentHeight());
         stage.setScene(scene);
         if (bgView != null) {
             bgView.fitWidthProperty().bind(scene.widthProperty());
