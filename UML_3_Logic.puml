@@ -125,23 +125,30 @@ package logic.game {
     }
 }
 
-' Inheritance
-objects.Human <|-- Player
+' Inheritance: Player extends Human
+objects.Human <|-- Player : extends
 
-' Associations
-LevelConfig --> LevelId
-LevelConfig --> rewards.Reward
+' Composition: GameEngine owns GameSession and GameBoard
+GameEngine "1" *-- "1" GameSession : session
+GameEngine "1" *-- "1" GameBoard : board
+GameEngine "1" --> "1" LevelId : levelId
 
-GameSession --> Player
-GameSession --> LevelConfig
+' Composition: GameSession owns Player and LevelConfig
+GameSession "1" *-- "0..1" Player : player
+GameSession "1" --> "1" LevelConfig : currentLevel
+GameSession "1" o-- "0..*" rewards.Reward : collectedRewards
 
-GameEngine --> GameSession
-GameEngine --> LevelId
-GameEngine --> GameBoard
+' LevelConfig references
+LevelConfig "1" --> "1" LevelId : levelId
+LevelConfig "1" --> "1" rewards.Reward : reward
 
-GameBoard --> objects.Human
-GameBoard --> objects.BaseObject
-GameBoard --> objects.obstacles.Cable
-GameBoard --> objects.items.BaseItem
+' GameBoard aggregates objects
+GameBoard "1" o-- "0..*" objects.Human : humans
+GameBoard "1" o-- "0..*" objects.BaseObject : moveableObstacles
+GameBoard "1" o-- "0..*" objects.obstacles.Cable : cables
+GameBoard "1" o-- "0..*" objects.items.BaseItem : items
+
+' Player uses Direction
+Player "1" --> "1" Direction : lastDirection
 
 @enduml

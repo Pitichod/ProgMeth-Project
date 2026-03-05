@@ -12,6 +12,9 @@ package gui {
         - {static} int WINDOW_WIDTH
         - {static} int WINDOW_HEIGHT
         - {static} int TILE
+        - {static} int HUMAN_REACTION_RANGE
+        - {static} long PLAYER_MOVE_ANIM_NANOS
+        - {static} long EASTER_EGG_MAX_GAP_NANOS
         - Stage stage
         - GameEngine engine
         - GameSession session
@@ -24,6 +27,18 @@ package gui {
         - ProgressBar staminaBar
         - Canvas gameCanvas
         - AnimationTimer renderTimer
+        - boolean gameOverHandled
+        - long animationStartNanos
+        - double renderPlayerX
+        - double renderPlayerY
+        - double moveFromX
+        - double moveFromY
+        - double moveToX
+        - double moveToY
+        - long playerMoveStartNanos
+        - boolean playerMoveAnimating
+        - int easterEggProgress
+        - long easterEggLastInputNanos
         + void start(Stage)
         - void showStartScene()
         - void showHowToPlayScene()
@@ -42,15 +57,23 @@ package gui {
         - void showLoseScene()
         - void refreshGameView()
         - void drawBoard()
+        - boolean handleEasterEggKey(KeyCode)
+        - boolean matchesEasterEggStep(int, KeyCode)
+        - HBox createHudRow(String, ProgressBar, Label)
+        - Button createMainButton(String)
+        - void applyHoverEffect(Button)
     }
 
     class ImageLoader {
+        - {static} Map<String, Image> cache
         + {static} Image loadImage(String, int, int)
         + {static} Image loadImage(String)
         + {static} void clearCache()
     }
 
     class SoundManager {
+        - {static} double volume
+        - {static} boolean muted
         + {static} void playBackgroundLoop()
         + {static} void stopBackground()
         + {static} void playClick()
@@ -87,20 +110,29 @@ package gui {
 }
 
 ' JavaFX Application (external)
-class Application <<external>> {
+class Application <<JavaFX>> {
     + {abstract} void start(Stage)
 }
 
-Application <|-- GameApp
+' Inheritance
+Application <|-- GameApp : extends
 
-' Dependencies
-Main ..> GameApp : launches
-GameApp --> logic.game.GameEngine
-GameApp --> logic.game.GameSession
-GameApp --> logic.game.LevelId
-GameApp ..> ImageLoader : uses
-GameApp ..> SoundManager : uses
-GameApp ..> RewardScreen : creates
-RewardScreen --> rewards.Reward
+' Entry point
+Main ..> GameApp : <<launches>>
+
+' Composition: GameApp owns engine and session
+GameApp "1" *-- "1" logic.game.GameEngine : engine
+GameApp "1" *-- "1" logic.game.GameSession : session
+GameApp "1" --> "1" logic.game.LevelId : currentLevelId
+
+' GameApp uses utilities
+GameApp ..> ImageLoader : <<uses>>
+GameApp ..> SoundManager : <<uses>>
+
+' GameApp creates RewardScreen on level complete
+GameApp ..> RewardScreen : <<creates>>
+
+' RewardScreen aggregates rewards
+RewardScreen "1" o-- "0..*" rewards.Reward : rewards
 
 @enduml

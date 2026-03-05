@@ -128,27 +128,27 @@ package interfaces {
 }
 
 ' Inheritance
-BaseObject <|-- Human
-BaseObject <|-- BaseItem
-BaseObject <|-- Chair
-BaseObject <|-- Table
-BaseObject <|-- Cable
+BaseObject <|-- Human : extends
+BaseObject <|-- BaseItem : extends
+BaseObject <|-- Chair : extends
+BaseObject <|-- Table : extends
+BaseObject <|-- Cable : extends
 
-Human <|-- Teacher
-Human <|-- TA
-Human <|-- Extrovert
-Human <|-- Introvert
+Human <|-- Teacher : extends
+Human <|-- TA : extends
+Human <|-- Extrovert : extends
+Human <|-- Introvert : extends
 
-BaseItem <|-- Caffeine
-BaseItem <|-- Parabola
-BaseItem <|-- RobuxGiftCard
+BaseItem <|-- Caffeine : extends
+BaseItem <|-- Parabola : extends
+BaseItem <|-- RobuxGiftCard : extends
 
 ' Interface implementations
-Interactable <|.. Human
-Attackable <|.. Human
-Pickable <|.. BaseItem
-Moveable <|.. Chair
-Moveable <|.. Table
-Interactable <|.. Cable
+Interactable <|.. Human : implements
+Attackable <|.. Human : implements
+Pickable <|.. BaseItem : implements
+Moveable <|.. Chair : implements
+Moveable <|.. Table : implements
+Interactable <|.. Cable : implements
 
 @enduml

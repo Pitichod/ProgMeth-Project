@@ -50,10 +50,10 @@ package rewards {
     }
 }
 
-Reward <|-- Glasses
-Reward <|-- Mouse
-Reward <|-- Notebook
-Reward <|-- Backpack
-Reward <|-- ChatGPTPro
+Reward <|-- Glasses : extends
+Reward <|-- Mouse : extends
+Reward <|-- Notebook : extends
+Reward <|-- Backpack : extends
+Reward <|-- ChatGPTPro : extends
 
 @enduml
