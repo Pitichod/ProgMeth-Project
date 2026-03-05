@@ -9,14 +9,34 @@ import objects.BaseObject;
 import interfaces.Moveable;
 import rewards.Reward;
 
+/**
+ * Core game engine that orchestrates player movement, combat, item pickup,
+ * obstacle pushing, and win/lose condition checks for a single level.
+ * Delegates board state to {@link GameBoard} and session state to {@link GameSession}.
+ */
 public class GameEngine {
+    /** The game session managing player state and rewards. */
     private final GameSession session;
+    /** The level being played. */
     private final LevelId levelId;
+    /** Default max health fallback. */
     private final int maxHealth = 5;
+    /** Maximum stamina for the current level. */
     private final int maxStamina;
+    /** The game board containing walls, obstacles, items, and enemies. */
     private GameBoard board;
+    /** The current status message displayed to the player. */
     private String statusMessage = "Move with Arrow keys or WASD.";
+    /** Whether the current level has been completed. */
     private boolean completed;
+
+    /**
+     * Constructs a GameEngine for the given session and level.
+     * Initialises the board and places the player at the start position.
+     *
+     * @param session the game session
+     * @param levelId the level to play
+     */
 
     public GameEngine(GameSession session, LevelId levelId) {
         this.session = session;
@@ -26,6 +46,13 @@ public class GameEngine {
         reloadBoard();
     }
 
+    /**
+     * Attempts to move the player in the given direction.
+     * Handles wall collision, enemy combat, obstacle pushing, item pickup,
+     * cable damage, and door (exit) detection.
+     *
+     * @param direction the direction to move
+     */
     public void move(Direction direction) {
         Player player = session.getPlayer();
         if (player == null) {
@@ -141,6 +168,9 @@ public class GameEngine {
         }
     }
 
+    /**
+     * Restarts the current level by reinitialising the player and reloading the board.
+     */
     public void restartLevel() {
         session.startLevel(levelId);
         reloadBoard();
@@ -155,31 +185,66 @@ public class GameEngine {
         player.setY(board.getPlayerStartY());
     }
 
+    /**
+     * Returns the game board for the current level.
+     *
+     * @return the {@link GameBoard}
+     */
     public GameBoard getBoard() {
         return board;
     }
 
+    /**
+     * Returns the player from the current session.
+     *
+     * @return the {@link Player}
+     */
     public Player getPlayer() {
         return session.getPlayer();
     }
 
+    /**
+     * Returns the current status message to display in the UI.
+     *
+     * @return the status message
+     */
     public String getStatusMessage() {
         return statusMessage;
     }
 
+    /**
+     * Returns whether the level has been completed.
+     *
+     * @return {@code true} if the level is completed
+     */
     public boolean isCompleted() {
         return completed;
     }
 
+    /**
+     * Returns the player's maximum health for this level.
+     *
+     * @return the max health
+     */
     public int getMaxHealth() {
         Player p = session.getPlayer();
         return p == null ? maxHealth : p.getMaxHealth();
     }
 
+    /**
+     * Returns the maximum stamina for this level.
+     *
+     * @return the max stamina
+     */
     public int getMaxStamina() {
         return maxStamina;
     }
 
+    /**
+     * Returns a human-readable label for the current level.
+     *
+     * @return the level label string
+     */
     public String getLevelLabel() {
         return switch (levelId) {
             case ISCALE_401 -> "LEVEL 1 (ISCALE 401)";
@@ -190,6 +255,11 @@ public class GameEngine {
         };
     }
 
+    /**
+     * Returns the {@link LevelId} of the next level, or {@code null} if this is the last level.
+     *
+     * @return the next level ID, or {@code null}
+     */
     public LevelId getNextLevelId() {
         return switch (levelId) {
             case ISCALE_401 -> LevelId.ISCALE_402;
@@ -200,6 +270,11 @@ public class GameEngine {
         };
     }
 
+    /**
+     * Returns the classpath resource path of the map file for this level.
+     *
+     * @return the resource path string
+     */
     public String getMapResource() {
         return switch (levelId) {
             case ISCALE_401 -> "/maps/iscale_401.txt";

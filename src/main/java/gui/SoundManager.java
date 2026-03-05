@@ -5,6 +5,12 @@ import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import java.net.URL;
 
+/**
+ * Centralized manager for all game audio: background music, sound effects,
+ * and volume/mute control. All methods are static; no instances are created.
+ * Short sounds use pre-loaded {@link AudioClip} instances for low-latency playback,
+ * while longer tracks use {@link MediaPlayer} instances.
+ */
 public class SoundManager {
     private static MediaPlayer bgPlayer;
     private static MediaPlayer typePlayer;
@@ -52,6 +58,9 @@ public class SoundManager {
         }
     }
 
+    /**
+     * Starts the background music loop. Stops any previously playing background track.
+     */
     public static void playBackgroundLoop() {
         try {
             if (bgPlayer != null) {
@@ -69,6 +78,9 @@ public class SoundManager {
         }
     }
 
+    /**
+     * Stops and disposes the background music player.
+     */
     public static void stopBackground() {
         try {
             if (bgPlayer != null) {
@@ -80,23 +92,37 @@ public class SoundManager {
         }
     }
 
+    /**
+     * Plays a one-shot audio clip at the given volume, respecting the mute setting.
+     *
+     * @param clip   the {@link AudioClip} to play
+     * @param volume the playback volume (0.0 to 1.0)
+     */
     private static void playClip(AudioClip clip, double volume) {
         if (clip == null) return;
         clip.play(volume * masterVolume);
     }
 
+    /** Plays the UI click sound effect. */
     public static void playClick() {
         playClip(clickClip, 1.0);
     }
 
+    /** Plays the level-win sound effect. */
     public static void playWin() {
         playClip(winClip, 1.0);
     }
 
+    /** Plays the level-lose sound effect. */
     public static void playLose() {
         playClip(loseClip, 1.0);
     }
 
+    /**
+     * Plays the opening narration audio for the given page number.
+     *
+     * @param page the opening page number (1-based)
+     */
     public static void playOpening(int page) {
         if (page <= 0) return;
         try {
@@ -124,6 +150,7 @@ public class SoundManager {
         } catch (Exception ignored) {}
     }
 
+    /** Stops the opening narration audio. */
     public static void stopOpening() {
         try {
             if (openingPlayer != null) {
@@ -134,6 +161,11 @@ public class SoundManager {
         } catch (Exception ignored) {}
     }
 
+    /**
+     * Plays the ending narration audio for the given page number.
+     *
+     * @param page the ending page number (1-based)
+     */
     public static void playEnding(int page) {
         if (page <= 0) return;
         try {
@@ -160,6 +192,7 @@ public class SoundManager {
         } catch (Exception ignored) {}
     }
 
+    /** Stops the ending narration audio. */
     public static void stopEnding() {
         try {
             if (endingPlayer != null) {
@@ -170,18 +203,22 @@ public class SoundManager {
         } catch (Exception ignored) {}
     }
 
+    /** Plays the player-walk sound effect. */
     public static void playWalk() {
         playClip(walkClip, 0.9);
     }
 
+    /** Plays the item-pickup sound effect. */
     public static void playPickUp() {
         playClip(pickUpClip, 1.0);
     }
 
+    /** Plays the player-hurt sound effect. */
     public static void playHurt() {
         playClip(hurtClip, 1.0);
     }
 
+    /** Plays the typewriter sound effect for text animations. */
     public static void playType() {
         try {
             // stop previous if any
@@ -206,6 +243,7 @@ public class SoundManager {
         }
     }
 
+    /** Stops the typewriter sound effect. */
     public static void stopType() {
         try {
             if (typePlayer != null) {

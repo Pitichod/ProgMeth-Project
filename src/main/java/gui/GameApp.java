@@ -45,6 +45,15 @@ import objects.obstacles.Chair;
 import objects.obstacles.Table;
 import rewards.Reward;
 
+/**
+ * Main JavaFX {@link Application} class that drives the entire game UI.
+ * <p>
+ * Manages all scene transitions (start, how-to-play, opening, level-select,
+ * game, reward, lose, and completion screens), renders the tile-based game
+ * board on a {@link Canvas}, and delegates game logic to {@link GameEngine}
+ * and {@link GameSession}.
+ * </p>
+ */
 public class GameApp extends Application {
     private static final int WINDOW_WIDTH = 1200;
     private static final int WINDOW_HEIGHT = 900;
@@ -87,6 +96,10 @@ public class GameApp extends Application {
         return stage.isShowing() && stage.getScene() != null ? stage.getScene().getHeight() : WINDOW_HEIGHT;
     }
 
+    /**
+     * {@inheritDoc}
+     * Initializes the primary stage and shows the start scene.
+     */
     @Override
     public void start(Stage primaryStage) {
         this.stage = primaryStage;
@@ -95,6 +108,7 @@ public class GameApp extends Application {
         stage.show();
     }
 
+    /** Displays the main-menu / start scene with background music. */
     private void showStartScene() {
         stopRenderLoop();
         SoundManager.playBackgroundLoop();
@@ -197,6 +211,7 @@ public class GameApp extends Application {
         // click sound handled by button ActionEvent (keyboard Enter/Space also triggers)
     }
 
+    /** Displays the how-to-play tutorial scene. */
     private void showHowToPlayScene() {
         stopRenderLoop();
 
@@ -281,6 +296,11 @@ public class GameApp extends Application {
         pageView.fitWidthProperty().bind(scene.widthProperty().multiply(0.8));
     }
 
+    /**
+     * Displays the opening narration scene for the given level.
+     *
+     * @param levelNum the 1-based level number
+     */
     private void showOpeningScene(int levelNum) {
         stopRenderLoop();
         SoundManager.stopBackground();
@@ -384,6 +404,7 @@ public class GameApp extends Application {
         pageView.fitWidthProperty().bind(scene.widthProperty().multiply(0.8));
     }
 
+    /** Displays the level-select scene. */
     private void showLevelSelectScene() {
         stopRenderLoop();
         SoundManager.stopBackground();
@@ -419,6 +440,11 @@ public class GameApp extends Application {
         stage.setScene(scene);
     }
 
+    /**
+     * Initializes the game engine for the given level and transitions to the game scene.
+     *
+     * @param levelNum the 1-based level number to start
+     */
     private void startGameWithLevel(int levelNum) {
         LevelId levelId = switch (levelNum) {
             case 1 -> LevelId.ISCALE_401;
@@ -482,6 +508,11 @@ public class GameApp extends Application {
         button.addEventHandler(ActionEvent.ACTION, ev -> SoundManager.playClick());
     }
 
+    /**
+     * Sets up and displays the main game scene for the specified level.
+     *
+     * @param levelId the level to show
+     */
     private void showGameScene(LevelId levelId) {
         stopRenderLoop();
         engine = new GameEngine(session, levelId);
@@ -670,6 +701,12 @@ public class GameApp extends Application {
         };
     }
 
+    /**
+     * Handles a player movement request in the given direction,
+     * updating the game engine and triggering animations.
+     *
+     * @param direction the direction to move
+     */
     private void handlePlayerMove(Direction direction) {
         int oldX = engine.getPlayer().getX();
         int oldY = engine.getPlayer().getY();
@@ -760,6 +797,7 @@ public class GameApp extends Application {
         }
     }
 
+    /** Handles the win condition — stops the render loop and shows the reward screen. */
     private void handleWin() {
         if (gameOverHandled) return;
         gameOverHandled = true;
@@ -769,6 +807,7 @@ public class GameApp extends Application {
         showRewardScreen();
     }
 
+    /** Handles the lose condition — stops the render loop and shows the lose scene. */
     private void handleLose() {
         if (gameOverHandled) return;
         gameOverHandled = true;
@@ -778,6 +817,7 @@ public class GameApp extends Application {
         showLoseScene();
     }
 
+    /** Displays the lose / game-over scene. */
     private void showLoseScene() {
         stopRenderLoop();
         SoundManager.stopBackground();
@@ -846,6 +886,7 @@ public class GameApp extends Application {
         return row;
     }
 
+    /** Updates the HUD labels and progress bars and redraws the board. */
     private void refreshGameView() {
         int hp = engine.getPlayer().getHealth();
         int stamina = engine.getPlayer().getStamina();
@@ -877,6 +918,7 @@ public class GameApp extends Application {
         drawBoard();
     }
 
+    /** Renders the entire tile-based game board onto the canvas. */
     private void drawBoard() {
         GraphicsContext g = gameCanvas.getGraphicsContext2D();
         g.setFill(Color.WHITE);
@@ -1217,6 +1259,7 @@ public class GameApp extends Application {
         return dy > 0 ? Direction.DOWN : Direction.UP;
     }
 
+    /** Shows the reward screen after a level is completed. */
     private void showRewardScreen() {
         stopRenderLoop();
 
@@ -1254,6 +1297,7 @@ public class GameApp extends Application {
         stage.setScene(rewardScreen.createScene());
     }
 
+    /** Shows the game-completion scene after all levels are finished. */
     private void showGameCompletionScene() {
         stopRenderLoop();
         SoundManager.stopBackground();
@@ -1361,6 +1405,15 @@ public class GameApp extends Application {
         return Math.sin((time * 4.0) + phaseOffset) * 2.0;
     }
 
+    /**
+     * Draws the player sprite at the interpolated render position.
+     *
+     * @param g             the graphics context
+     * @param originX       board origin X on canvas
+     * @param originY       board origin Y on canvas
+     * @param renderPlayerX interpolated player X in grid units
+     * @param renderPlayerY interpolated player Y in grid units
+     */
     private void drawPlayer(GraphicsContext g, double originX, double originY, double renderPlayerX, double renderPlayerY) {
         double x = originX + renderPlayerX * TILE;
         double y = originY + renderPlayerY * TILE;

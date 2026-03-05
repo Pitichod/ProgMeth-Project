@@ -3,6 +3,7 @@ build/*
 !build/libs/
 !build/distributions/
 !build/scripts/
+!build/docs/
 
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
@@ -46,4 +47,3 @@ bin/
 .DS_Store
 
 *.zip
-*.md

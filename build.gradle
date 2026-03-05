@@ -83,3 +83,11 @@ jar {
     // Set archive name
     archiveFileName = "${project.name}-${project.version}-with-sources.jar"
 }
+
+javadoc {
+    options.encoding = 'UTF-8'
+    options.charSet = 'UTF-8'
+    options.addStringOption('Xdoclint:none', '-quiet')
+    options.memberLevel = JavadocMemberLevel.PRIVATE
+    classpath = sourceSets.main.compileClasspath
+}

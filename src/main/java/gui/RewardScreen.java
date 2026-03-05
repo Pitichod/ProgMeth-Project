@@ -16,26 +16,54 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import rewards.Reward;
 
+/**
+ * Screen displayed after the player completes a level, showing the rewards
+ * collected during that level with page-style navigation before proceeding
+ * to the next stage.
+ */
 public class RewardScreen {
     private final Stage stage;
     private final List<Reward> rewards;
     private final int currentLevelNumber;
     private Runnable onNextLevel;
 
+    /**
+     * Creates a new reward screen.
+     *
+     * @param stage              the primary stage to display the scene on
+     * @param rewards            the list of rewards to show
+     * @param currentLevelNumber the 1-based level number just completed
+     */
     public RewardScreen(Stage stage, List<Reward> rewards, int currentLevelNumber) {
         this.stage = stage;
         this.rewards = rewards;
         this.currentLevelNumber = currentLevelNumber;
     }
 
+    /**
+     * Registers a callback to invoke when the player proceeds past the last reward.
+     *
+     * @param callback the action to run
+     */
     public void setOnNextLevel(Runnable callback) {
         this.onNextLevel = callback;
     }
 
+    /**
+     * Retained for API compatibility; currently unused.
+     *
+     * @param callback ignored
+     */
     public void setOnMainMenu(Runnable callback) {
         // intentionally retained for compatibility but not used in new UI
     }
 
+    /**
+     * Builds and returns the reward display {@link Scene}.
+     * The scene presents reward images one by one with a "Next" button.
+     *
+     * @return the constructed scene
+     */
     public Scene createScene() {
 //        Label titleLabel = new Label("Level " + currentLevelNumber + " Clear!");
 //        titleLabel.setFont(Font.font("System", 64));

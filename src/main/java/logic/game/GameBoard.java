@@ -22,6 +22,12 @@ import objects.obstacles.Chair;
 import objects.obstacles.Table;
 import objects.BaseObject;
 
+/**
+ * Represents the game board (map) for a single level.
+ * Parses a text-based map file from resources and stores walls, obstacles,
+ * cables, items, enemies, the player start position, and the exit door position.
+ * Provides lookup methods for finding objects at specific grid coordinates.
+ */
 public class GameBoard {
     private final int width;
     private final int height;
@@ -41,6 +47,14 @@ public class GameBoard {
         this.walls = new boolean[height][width];
     }
 
+    /**
+     * Loads and parses a map file from the classpath.
+     * Each character in the text file represents a tile (wall, floor, enemy, item, etc.).
+     *
+     * @param resourcePath the classpath resource path to the map file
+     * @return the parsed {@link GameBoard}
+     * @throws IllegalStateException if the file cannot be found, read, or contains invalid data
+     */
     public static GameBoard fromResource(String resourcePath) {
         InputStream in = GameBoard.class.getResourceAsStream(resourcePath);
         if (in == null) {
@@ -195,54 +209,125 @@ public class GameBoard {
         }
     }
 
+    /**
+     * Returns the width of the board in tiles.
+     *
+     * @return the number of columns
+     */
     public int getWidth() {
         return width;
     }
 
+    /**
+     * Returns the height of the board in tiles.
+     *
+     * @return the number of rows
+     */
     public int getHeight() {
         return height;
     }
 
+    /**
+     * Returns whether the given cell is a wall or out of bounds.
+     *
+     * @param x the column
+     * @param y the row
+     * @return {@code true} if the cell is a wall or out of bounds
+     */
     public boolean isWall(int x, int y) {
         return !isInBounds(x, y) || walls[y][x];
     }
 
+    /**
+     * Returns whether the given coordinates are within the board boundaries.
+     *
+     * @param x the column
+     * @param y the row
+     * @return {@code true} if in bounds
+     */
     public boolean isInBounds(int x, int y) {
         return x >= 0 && y >= 0 && x < width && y < height;
     }
 
+    /**
+     * Returns the player's starting column.
+     *
+     * @return the start X coordinate
+     */
     public int getPlayerStartX() {
         return playerStartX;
     }
 
+    /**
+     * Returns the player's starting row.
+     *
+     * @return the start Y coordinate
+     */
     public int getPlayerStartY() {
         return playerStartY;
     }
 
+    /**
+     * Returns the exit door column.
+     *
+     * @return the door X coordinate
+     */
     public int getDoorX() {
         return doorX;
     }
 
+    /**
+     * Returns the exit door row.
+     *
+     * @return the door Y coordinate
+     */
     public int getDoorY() {
         return doorY;
     }
 
+    /**
+     * Returns the list of moveable obstacles (chairs and tables) on the board.
+     *
+     * @return the list of moveable obstacles
+     */
     public List<BaseObject> getMoveableObstacles() {
         return moveableObstacles;
     }
 
+    /**
+     * Returns the list of cables on the board.
+     *
+     * @return the list of cables
+     */
     public List<Cable> getCables() {
         return cables;
     }
 
+    /**
+     * Returns the list of human enemies on the board.
+     *
+     * @return the list of humans
+     */
     public List<Human> getHumans() {
         return humans;
     }
 
+    /**
+     * Returns the list of collectible items on the board.
+     *
+     * @return the list of items
+     */
     public List<BaseItem> getItems() {
         return items;
     }
 
+    /**
+     * Finds an active human at the given grid position.
+     *
+     * @param x the column
+     * @param y the row
+     * @return the {@link Human} at that position, or {@code null} if none
+     */
     public Human findHumanAt(int x, int y) {
         for (Human human : humans) {
             if (human.isActive() && human.getX() == x && human.getY() == y) {
@@ -252,6 +337,13 @@ public class GameBoard {
         return null;
     }
 
+    /**
+     * Finds a moveable obstacle at the given grid position.
+     *
+     * @param x the column
+     * @param y the row
+     * @return the obstacle at that position, or {@code null} if none
+     */
     public BaseObject findMoveableObstacleAt(int x, int y) {
         for (BaseObject obstacle : moveableObstacles) {
             if (obstacle.getX() == x && obstacle.getY() == y) {
@@ -261,6 +353,13 @@ public class GameBoard {
         return null;
     }
 
+    /**
+     * Finds a cable at the given grid position.
+     *
+     * @param x the column
+     * @param y the row
+     * @return the {@link Cable} at that position, or {@code null} if none
+     */
     public Cable findCableAt(int x, int y) {
         for (Cable cable : cables) {
             if (cable.getX() == x && cable.getY() == y) {
@@ -270,6 +369,13 @@ public class GameBoard {
         return null;
     }
 
+    /**
+     * Finds an unconsumed item at the given grid position.
+     *
+     * @param x the column
+     * @param y the row
+     * @return the {@link BaseItem} at that position, or {@code null} if none
+     */
     public BaseItem findItemAt(int x, int y) {
         for (BaseItem item : items) {
             if (!item.isConsumed() && item.getX() == x && item.getY() == y) {
@@ -279,6 +385,13 @@ public class GameBoard {
         return null;
     }
 
+    /**
+     * Returns whether the given cell is blocked (wall, obstacle, or active human).
+     *
+     * @param x the column
+     * @param y the row
+     * @return {@code true} if the cell cannot be entered
+     */
     public boolean isBlockingCell(int x, int y) {
         if (isWall(x, y)) {
             return true;
@@ -289,6 +402,13 @@ public class GameBoard {
         return findHumanAt(x, y) != null;
     }
 
+    /**
+     * Returns whether the given cell is the exit door.
+     *
+     * @param x the column
+     * @param y the row
+     * @return {@code true} if this is the door position
+     */
     public boolean isDoor(int x, int y) {
         return x == doorX && y == doorY;
     }
