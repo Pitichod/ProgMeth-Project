@@ -764,7 +764,7 @@ public class GameApp extends Application {
         if (exitImg != null) {
             javafx.scene.image.ImageView eiv = new javafx.scene.image.ImageView(exitImg);
             eiv.setPreserveRatio(true);
-            eiv.setFitWidth(160);
+            eiv.setFitWidth(220);
             exit.setGraphic(eiv);
         } else {
             exit.setText("Exit");
