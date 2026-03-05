@@ -1,0 +1,154 @@
+@startuml UML_2_Objects
+title Objects, Items & Obstacles
+
+package objects {
+    abstract class BaseObject {
+        - String name
+        - int x
+        - int y
+        # BaseObject(String, int, int)
+        + String getName()
+        + void setName(String)
+        + int getX()
+        + void setX(int)
+        + int getY()
+        + void setY(int)
+    }
+
+    abstract class Human {
+        - int health
+        - boolean active
+        - Direction facing
+        - long nextFaceChangeAt
+        # Human(String, int, int, int)
+        + int getHealth()
+        + void setHealth(int)
+        + boolean isActive()
+        + void setActive(boolean)
+        + void interact(Player)
+        + Direction getFacing()
+        + void setFacing(Direction)
+        + long getNextFaceChangeAt()
+        + void setNextFaceChangeAt(long)
+    }
+
+    class Teacher {
+        + Teacher(int, int)
+        + void onAttackedBy(Player)
+    }
+
+    class TA {
+        + TA(int, int)
+        + void onAttackedBy(Player)
+    }
+
+    class Extrovert {
+        + Extrovert(int, int)
+        + void onAttackedBy(Player)
+    }
+
+    class Introvert {
+        + Introvert(int, int)
+        + void onAttackedBy(Player)
+    }
+}
+
+package objects.items {
+    abstract class BaseItem {
+        - boolean consumed
+        # BaseItem(String, int, int)
+        + boolean isConsumed()
+        + void onPick(Player)
+        # {abstract} void consume(Player)
+    }
+
+    class Caffeine {
+        + Caffeine(int, int)
+        # void consume(Player)
+    }
+
+    class Parabola {
+        + Parabola(int, int)
+        # void consume(Player)
+    }
+
+    class RobuxGiftCard {
+        + RobuxGiftCard(int, int)
+        # void consume(Player)
+    }
+}
+
+package objects.obstacles {
+    class Chair {
+        - String orientation
+        + Chair(int, int, String)
+        + Chair(int, int)
+        + String getOrientation()
+        + int getMoveCost()
+        + void move(Direction)
+    }
+
+    class Table {
+        - int sizeInBlocks
+        - String orientation
+        + Table(int, int, String)
+        + Table(int, int)
+        + int getSizeInBlocks()
+        + String getOrientation()
+        + int getMoveCost()
+        + void move(Direction)
+    }
+
+    class Cable {
+        - String spriteName
+        + Cable(int, int)
+        + Cable(int, int, String)
+        + String getSpriteName()
+        + void interact(Player)
+    }
+}
+
+package interfaces {
+    interface Pickable {
+        + void onPick(Player)
+    }
+
+    interface Attackable {
+        + void onAttackedBy(Player)
+    }
+
+    interface Moveable {
+        + int getMoveCost()
+        + void move(Direction)
+    }
+
+    interface Interactable {
+        + void interact(Player)
+    }
+}
+
+' Inheritance
+BaseObject <|-- Human
+BaseObject <|-- BaseItem
+BaseObject <|-- Chair
+BaseObject <|-- Table
+BaseObject <|-- Cable
+
+Human <|-- Teacher
+Human <|-- TA
+Human <|-- Extrovert
+Human <|-- Introvert
+
+BaseItem <|-- Caffeine
+BaseItem <|-- Parabola
+BaseItem <|-- RobuxGiftCard
+
+' Interface implementations
+Interactable <|.. Human
+Attackable <|.. Human
+Pickable <|.. BaseItem
+Moveable <|.. Chair
+Moveable <|.. Table
+Interactable <|.. Cable
+
+@enduml

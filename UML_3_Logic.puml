@@ -1,0 +1,147 @@
+@startuml UML_3_Logic
+title Game Logic
+
+package logic.components {
+    enum Direction {
+        UP
+        DOWN
+        LEFT
+        RIGHT
+        -- fields --
+        - int dx
+        - int dy
+        -- methods --
+        + int getDx()
+        + int getDy()
+    }
+}
+
+package logic.game {
+    enum LevelId {
+        ISCALE_401
+        ISCALE_402
+        ISCALE_403
+        ISCALE_404
+        ISCALE_405
+    }
+
+    class LevelConfig {
+        - LevelId levelId
+        - int defaultHealth
+        - int defaultStamina
+        - Reward reward
+        + LevelConfig(LevelId, int, int, Reward)
+        + LevelId getLevelId()
+        + int getDefaultHealth()
+        + int getDefaultStamina()
+        + Reward getReward()
+        + {static} LevelConfig fromLevel(LevelId)
+    }
+
+    class Player {
+        - int stamina
+        - int maxHealth
+        - Direction lastDirection
+        + Player(int, int, int, int)
+        + int getMaxHealth()
+        + Direction getLastDirection()
+        + void setLastDirection(Direction)
+        + int getStamina()
+        + void setStamina(int)
+        + boolean consumeStamina(int)
+        + void gainStamina(int)
+        + void takeDamage(int)
+        + void heal(int)
+        + void attack(Attackable)
+        + void onAttackedBy(Player)
+    }
+
+    class GameBoard {
+        - int width
+        - int height
+        - boolean[][] walls
+        - List<BaseObject> moveableObstacles
+        - List<Cable> cables
+        - List<Human> humans
+        - List<BaseItem> items
+        - int playerStartX
+        - int playerStartY
+        - int doorX
+        - int doorY
+        - GameBoard(int, int)
+        + {static} GameBoard fromResource(String)
+        + int getWidth()
+        + int getHeight()
+        + boolean isWall(int, int)
+        + boolean isInBounds(int, int)
+        + int getPlayerStartX()
+        + int getPlayerStartY()
+        + int getDoorX()
+        + int getDoorY()
+        + List<BaseObject> getMoveableObstacles()
+        + List<Cable> getCables()
+        + List<Human> getHumans()
+        + List<BaseItem> getItems()
+        + Human findHumanAt(int, int)
+        + BaseObject findMoveableObstacleAt(int, int)
+        + Cable findCableAt(int, int)
+        + BaseItem findItemAt(int, int)
+        + boolean isBlockingCell(int, int)
+        + boolean isDoor(int, int)
+    }
+
+    class GameSession {
+        - List<Reward> collectedRewards
+        - Player player
+        - LevelConfig currentLevel
+        + void startLevel(LevelId)
+        + Player getPlayer()
+        + LevelConfig getCurrentLevel()
+        + Reward completeCurrentLevel()
+        + List<Reward> getCollectedRewards()
+        + boolean hasFinishedAllLevels()
+    }
+
+    class GameEngine {
+        - GameSession session
+        - LevelId levelId
+        - int maxHealth
+        - int maxStamina
+        - GameBoard board
+        - String statusMessage
+        - boolean completed
+        + GameEngine(GameSession, LevelId)
+        + void move(Direction)
+        + void restartLevel()
+        + GameBoard getBoard()
+        + Player getPlayer()
+        + String getStatusMessage()
+        + boolean isCompleted()
+        + int getMaxHealth()
+        + int getMaxStamina()
+        + String getLevelLabel()
+        + LevelId getNextLevelId()
+        + String getMapResource()
+    }
+}
+
+' Inheritance
+objects.Human <|-- Player
+
+' Associations
+LevelConfig --> LevelId
+LevelConfig --> rewards.Reward
+
+GameSession --> Player
+GameSession --> LevelConfig
+
+GameEngine --> GameSession
+GameEngine --> LevelId
+GameEngine --> GameBoard
+
+GameBoard --> objects.Human
+GameBoard --> objects.BaseObject
+GameBoard --> objects.obstacles.Cable
+GameBoard --> objects.items.BaseItem
+
+@enduml

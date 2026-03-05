@@ -1,0 +1,106 @@
+@startuml UML_4_GUI
+title GUI & Application
+
+package application {
+    class Main {
+        + {static} void main(String[])
+    }
+}
+
+package gui {
+    class GameApp {
+        - {static} int WINDOW_WIDTH
+        - {static} int WINDOW_HEIGHT
+        - {static} int TILE
+        - Stage stage
+        - GameEngine engine
+        - GameSession session
+        - LevelId currentLevelId
+        - Label hpLabel
+        - Label staminaLabel
+        - Label levelLabel
+        - Label statusLabel
+        - ProgressBar hpBar
+        - ProgressBar staminaBar
+        - Canvas gameCanvas
+        - AnimationTimer renderTimer
+        + void start(Stage)
+        - void showStartScene()
+        - void showHowToPlayScene()
+        - void showOpeningScene(int)
+        - void showLevelSelectScene()
+        - void startGameWithLevel(int)
+        - void showGameScene(LevelId)
+        - void handlePlayerMove(Direction)
+        - void startPlayerMoveAnimation(int, int)
+        - void updatePlayerAnimation()
+        - void syncPlayerRenderPosition()
+        - void startRenderLoop()
+        - void stopRenderLoop()
+        - void handleWin()
+        - void handleLose()
+        - void showLoseScene()
+        - void refreshGameView()
+        - void drawBoard()
+    }
+
+    class ImageLoader {
+        + {static} Image loadImage(String, int, int)
+        + {static} Image loadImage(String)
+        + {static} void clearCache()
+    }
+
+    class SoundManager {
+        + {static} void playBackgroundLoop()
+        + {static} void stopBackground()
+        + {static} void playClick()
+        + {static} void playWin()
+        + {static} void playLose()
+        + {static} void playWalk()
+        + {static} void playPickUp()
+        + {static} void playHurt()
+        + {static} void playType()
+        + {static} void stopType()
+        + {static} void playOpening(int)
+        + {static} void stopOpening()
+        + {static} void playEnding(int)
+        + {static} void stopEnding()
+        + {static} void increaseVolume()
+        + {static} void decreaseVolume()
+        + {static} void setVolume(double)
+        + {static} double getVolume()
+        + {static} void toggleMute()
+        + {static} void mute()
+    }
+
+    class RewardScreen {
+        - Stage stage
+        - List<Reward> rewards
+        - int currentLevelNumber
+        - Runnable onNextLevel
+        - Runnable onMainMenu
+        + RewardScreen(Stage, List<Reward>, int)
+        + void setOnNextLevel(Runnable)
+        + void setOnMainMenu(Runnable)
+        + Scene createScene()
+    }
+}
+
+' JavaFX Application (external)
+class Application <<external>> {
+    + {abstract} void start(Stage)
+}
+
+Application <|-- GameApp
+
+' Dependencies
+Main ..> GameApp : launches
+GameApp --> logic.game.GameEngine
+GameApp --> logic.game.GameSession
+GameApp --> logic.game.LevelId
+GameApp ..> ImageLoader : uses
+GameApp ..> SoundManager : uses
+GameApp ..> RewardScreen : creates
+RewardScreen --> rewards.Reward
+
+@enduml

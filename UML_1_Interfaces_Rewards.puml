@@ -1,0 +1,59 @@
+@startuml UML_1_Interfaces_Rewards
+title Interfaces & Rewards
+
+package interfaces {
+    interface Pickable {
+        + void onPick(Player)
+    }
+
+    interface Attackable {
+        + void onAttackedBy(Player)
+    }
+
+    interface Moveable {
+        + int getMoveCost()
+        + void move(Direction)
+    }
+
+    interface Interactable {
+        + void interact(Player)
+    }
+}
+
+package rewards {
+    abstract class Reward {
+        - String name
+        - int stageNumber
+        # Reward(String, int)
+        + String getName()
+        + int getStageNumber()
+    }
+
+    class Glasses {
+        + Glasses()
+    }
+
+    class Mouse {
+        + Mouse()
+    }
+
+    class Notebook {
+        + Notebook()
+    }
+
+    class Backpack {
+        + Backpack()
+    }
+
+    class ChatGPTPro {
+        + ChatGPTPro()
+    }
+}
+
+Reward <|-- Glasses
+Reward <|-- Mouse
+Reward <|-- Notebook
+Reward <|-- Backpack
+Reward <|-- ChatGPTPro
+
+@enduml
