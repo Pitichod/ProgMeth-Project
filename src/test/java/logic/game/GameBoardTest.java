@@ -9,18 +9,18 @@ import objects.items.BaseItem;
 import org.junit.jupiter.api.Test;
 
 /**
- * ทดสอบ GameBoard ที่รับผิดชอบการโหลดแผนที่, ตรวจกำแพง, หาวัตถุบนกระดาน
+ * Tests GameBoard which is responsible for loading maps, detecting walls, and locating objects.
  *
- * เหตุผล: GameBoard เป็นรากฐานของทุกด่าน
- * ถ้า parse map ผิด จะวางกำแพง/วัตถุ/ประตูผิดตำแหน่ง ทำเกมเล่นไม่ได้
+ * Reason: GameBoard is the foundation of every level.
+ * If map parsing is wrong, walls/objects/doors will be misplaced, making the game unplayable.
  */
 class GameBoardTest {
 
-    // --- โหลดแผนที่ ---
+    // --- Map Loading ---
 
     @Test
     void fromResourceShouldParseSimpleMap() {
-        // แผนที่ test_simple: 5x3, มี P และ D
+        // test_simple map: 5x3, contains P and D
         GameBoard board = GameBoard.fromResource("/maps/test_simple.txt");
         assertEquals(5, board.getWidth());
         assertEquals(3, board.getHeight());
@@ -28,16 +28,16 @@ class GameBoardTest {
 
     @Test
     void fromResourceShouldThrowForMissingMap() {
-        // ต้อง throw เมื่อไม่พบไฟล์แผนที่
+        // Must throw when the map file is not found
         assertThrows(IllegalStateException.class,
                 () -> GameBoard.fromResource("/maps/nonexistent.txt"));
     }
 
-    // --- ตำแหน่งเริ่มต้น ---
+    // --- Starting Position ---
 
     @Test
     void playerStartPositionShouldMatchPSymbol() {
-        // P ใน test_simple อยู่ที่ (1,1)
+        // P in test_simple is at (1,1)
         GameBoard board = GameBoard.fromResource("/maps/test_simple.txt");
         assertEquals(1, board.getPlayerStartX());
         assertEquals(1, board.getPlayerStartY());
@@ -45,17 +45,17 @@ class GameBoardTest {
 
     @Test
     void doorPositionShouldMatchDSymbol() {
-        // D ใน test_simple อยู่ที่ (3,1)
+        // D in test_simple is at (3,1)
         GameBoard board = GameBoard.fromResource("/maps/test_simple.txt");
         assertEquals(3, board.getDoorX());
         assertEquals(1, board.getDoorY());
     }
 
-    // --- กำแพง ---
+    // --- Walls ---
 
     @Test
     void wallsShouldBeDetected() {
-        // ขอบแผนที่ (#) ต้องเป็นกำแพง
+        // Border tiles (#) must be detected as walls
         GameBoard board = GameBoard.fromResource("/maps/test_simple.txt");
         assertTrue(board.isWall(0, 0));
         assertTrue(board.isWall(4, 2));
@@ -63,14 +63,14 @@ class GameBoardTest {
 
     @Test
     void emptyTileShouldNotBeWall() {
-        // ช่อง . ต้องไม่ใช่กำแพง
+        // A '.' tile must not be a wall
         GameBoard board = GameBoard.fromResource("/maps/test_simple.txt");
         assertFalse(board.isWall(2, 1));
     }
 
     @Test
     void outOfBoundsShouldBeTreatedAsWall() {
-        // ตำแหน่งนอกแผนที่ต้อง return true (กันผู้เล่นออกนอก)
+        // Out-of-bounds positions must return true (prevent player from leaving the map)
         GameBoard board = GameBoard.fromResource("/maps/test_simple.txt");
         assertTrue(board.isWall(-1, 0));
         assertTrue(board.isWall(0, -1));
@@ -108,11 +108,11 @@ class GameBoardTest {
         assertFalse(board.isDoor(1, 1));
     }
 
-    // --- วัตถุบนกระดาน ---
+    // --- Objects on the Board ---
 
     @Test
     void obstacleMapShouldParseChair() {
-        // test_obstacles มี C ที่ (3,1) → Chair
+        // test_obstacles has 'C' at (3,1) -> Chair
         GameBoard board = GameBoard.fromResource("/maps/test_obstacles.txt");
         BaseObject chair = board.findMoveableObstacleAt(3, 1);
         assertNotNull(chair);
@@ -121,7 +121,7 @@ class GameBoardTest {
 
     @Test
     void cableMapShouldParseCable() {
-        // test_obstacles มี W ที่ (5,1) → Cable
+        // test_obstacles has 'W' at (5,1) -> Cable
         GameBoard board = GameBoard.fromResource("/maps/test_obstacles.txt");
         Cable cable = board.findCableAt(5, 1);
         assertNotNull(cable);
@@ -129,7 +129,7 @@ class GameBoardTest {
 
     @Test
     void itemMapShouldParseAllThreeItems() {
-        // test_items มี 1(Parabola), 2(Caffeine), 3(RobuxGiftCard)
+        // test_items has 1(Parabola), 2(Caffeine), 3(RobuxGiftCard)
         GameBoard board = GameBoard.fromResource("/maps/test_items.txt");
         assertNotNull(board.findItemAt(2, 1)); // Parabola
         assertNotNull(board.findItemAt(3, 1)); // Caffeine
@@ -139,7 +139,7 @@ class GameBoardTest {
 
     @Test
     void enemyMapShouldParseExtrovert() {
-        // test_enemies มี E ที่ (3,1)
+        // test_enemies has 'E' at (3,1)
         GameBoard board = GameBoard.fromResource("/maps/test_enemies.txt");
         Human enemy = board.findHumanAt(3, 1);
         assertNotNull(enemy);
@@ -151,14 +151,14 @@ class GameBoardTest {
     @Test
     void blockingCellShouldIncludeWallAndObstacle() {
         GameBoard board = GameBoard.fromResource("/maps/test_obstacles.txt");
-        assertTrue(board.isBlockingCell(0, 0));  // กำแพง
-        assertTrue(board.isBlockingCell(3, 1));  // เก้าอี้
+        assertTrue(board.isBlockingCell(0, 0));  // wall
+        assertTrue(board.isBlockingCell(3, 1));  // chair
     }
 
     @Test
     void emptyFloorShouldNotBeBlocking() {
         GameBoard board = GameBoard.fromResource("/maps/test_obstacles.txt");
-        assertFalse(board.isBlockingCell(2, 1));  // ช่องว่าง
+        assertFalse(board.isBlockingCell(2, 1));  // empty tile
     }
 
     // --- find methods return null when empty ---

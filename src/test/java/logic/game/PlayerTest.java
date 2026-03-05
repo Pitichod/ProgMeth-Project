@@ -6,19 +6,19 @@ import logic.components.Direction;
 import org.junit.jupiter.api.Test;
 
 /**
- * ทดสอบ Player ซึ่งเป็นตัวละครหลักที่ผู้เล่นควบคุม
- * ครอบคลุม: การสร้าง, stamina, health, damage, heal, attack, direction
+ * Tests the Player class, which is the main character controlled by the user.
+ * Covers: construction, stamina, health, damage, heal, attack, direction.
  *
- * เหตุผล: Player เป็นแกนกลางของ logic ทั้งหมด
- * ถ้า setter/getter ผิดจะกระทบ GameEngine, items, enemies ทุกตัว
+ * Reason: Player is the central piece of all game logic.
+ * If any setter/getter is wrong, it will affect GameEngine, items, and enemies.
  */
 class PlayerTest {
 
-    // === การสร้าง Player ===
+    // === Player Construction ===
 
     @Test
     void constructorShouldSetMaxHealthAndStamina() {
-        // ตรวจว่า constructor ตั้งค่าเริ่มต้นถูกต้อง
+        // Verify constructor initializes all fields correctly
         Player p = new Player(5, 10, 2, 3);
         assertEquals(5, p.getMaxHealth());
         assertEquals(5, p.getHealth());
@@ -29,14 +29,14 @@ class PlayerTest {
 
     @Test
     void constructorShouldClampMaxHealthToAtLeastOne() {
-        // maxHealth ≤ 0 ต้องถูก clamp เป็น 1 ป้องกัน division-by-zero ใน HUD
+        // maxHealth <= 0 must be clamped to 1 to prevent division-by-zero in the HUD
         Player p = new Player(0, 5, 0, 0);
         assertEquals(1, p.getMaxHealth());
     }
 
     @Test
     void constructorShouldClampNegativeStaminaToZero() {
-        // stamina ติดลบต้องถูก clamp เป็น 0
+        // Negative stamina must be clamped to 0
         Player p = new Player(5, -3, 0, 0);
         assertEquals(0, p.getStamina());
     }
@@ -45,7 +45,7 @@ class PlayerTest {
 
     @Test
     void consumeStaminaShouldDecreasAndReturnTrue() {
-        // ใช้ stamina สำเร็จเมื่อมีเพียงพอ
+        // Consuming stamina succeeds when sufficient amount is available
         Player p = new Player(5, 10, 0, 0);
         assertTrue(p.consumeStamina(3));
         assertEquals(7, p.getStamina());
@@ -53,7 +53,7 @@ class PlayerTest {
 
     @Test
     void consumeStaminaShouldReturnFalseWhenInsufficient() {
-        // ใช้ stamina ไม่สำเร็จเมื่อไม่พอ ค่า stamina ต้องไม่เปลี่ยน
+        // Consuming stamina fails when not enough; stamina must remain unchanged
         Player p = new Player(5, 2, 0, 0);
         assertFalse(p.consumeStamina(5));
         assertEquals(2, p.getStamina());
@@ -61,7 +61,7 @@ class PlayerTest {
 
     @Test
     void consumeStaminaShouldRejectNegativeAmount() {
-        // ป้องกันการ exploit ด้วยค่าลบ
+        // Prevent exploit via negative values
         Player p = new Player(5, 10, 0, 0);
         assertFalse(p.consumeStamina(-1));
         assertEquals(10, p.getStamina());
@@ -69,7 +69,7 @@ class PlayerTest {
 
     @Test
     void gainStaminaShouldIncrease() {
-        // เพิ่ม stamina เมื่อกินไอเทม
+        // Gain stamina when picking up an item
         Player p = new Player(5, 5, 0, 0);
         p.gainStamina(3);
         assertEquals(8, p.getStamina());
@@ -77,7 +77,7 @@ class PlayerTest {
 
     @Test
     void gainStaminaShouldIgnoreNonPositiveAmount() {
-        // gainStamina(0) หรือลบต้องไม่เปลี่ยนค่า
+        // gainStamina(0) or negative must not change the value
         Player p = new Player(5, 5, 0, 0);
         p.gainStamina(0);
         p.gainStamina(-2);
@@ -88,7 +88,7 @@ class PlayerTest {
 
     @Test
     void takeDamageShouldReduceHealth() {
-        // ตรวจกลไกรับดาเมจพื้นฐาน
+        // Verify basic damage mechanic
         Player p = new Player(5, 10, 0, 0);
         p.takeDamage(2);
         assertEquals(3, p.getHealth());
@@ -96,7 +96,7 @@ class PlayerTest {
 
     @Test
     void takeDamageShouldNotGoBelowZero() {
-        // HP ต้องไม่ติดลบ (Human.setHealth clamps to 0)
+        // HP must not go negative (Human.setHealth clamps to 0)
         Player p = new Player(3, 10, 0, 0);
         p.takeDamage(10);
         assertEquals(0, p.getHealth());
@@ -104,7 +104,7 @@ class PlayerTest {
 
     @Test
     void takeDamageShouldIgnoreNonPositiveAmount() {
-        // damage ≤ 0 ต้องไม่มีผล
+        // damage <= 0 must have no effect
         Player p = new Player(5, 10, 0, 0);
         p.takeDamage(0);
         p.takeDamage(-1);
@@ -113,18 +113,18 @@ class PlayerTest {
 
     @Test
     void healShouldIncreaseHealthUpToMax() {
-        // heal ต้องไม่เกิน maxHealth
+        // Healing must not exceed maxHealth
         Player p = new Player(5, 10, 0, 0);
         p.takeDamage(3);
         assertEquals(2, p.getHealth());
 
-        p.heal(10); // heal เกิน max
+        p.heal(10); // heal beyond max
         assertEquals(5, p.getHealth());
     }
 
     @Test
     void healShouldReactivateDeadPlayer() {
-        // heal หลังตายต้องทำให้กลับมา active
+        // Healing a dead player must reactivate them
         Player p = new Player(5, 10, 0, 0);
         p.takeDamage(5);
         assertFalse(p.isActive());
@@ -147,7 +147,7 @@ class PlayerTest {
 
     @Test
     void defaultLastDirectionShouldBeDown() {
-        // ทิศเริ่มต้นที่ตัวละครหัน = DOWN (ใช้เลือกภาพ sprite)
+        // Default facing direction = DOWN (used for sprite selection)
         Player p = new Player(5, 10, 0, 0);
         assertEquals(Direction.DOWN, p.getLastDirection());
     }
@@ -163,18 +163,18 @@ class PlayerTest {
 
     @Test
     void attackShouldNotActWhenPlayerIsDead() {
-        // ผู้เล่นที่ตายแล้วต้องไม่สามารถโจมตีได้
+        // A dead player must not be able to attack
         Player p = new Player(5, 10, 0, 0);
         p.takeDamage(5);
 
         objects.Extrovert e = new objects.Extrovert(1, 0);
         p.attack(e);
-        assertTrue(e.isActive()); // ศัตรูไม่ถูกกระทบ
+        assertTrue(e.isActive()); // enemy is unaffected
     }
 
     @Test
     void attackNullShouldNotThrow() {
-        // attack(null) ต้องไม่พัง
+        // attack(null) must not crash
         Player p = new Player(5, 10, 0, 0);
         assertDoesNotThrow(() -> p.attack(null));
     }

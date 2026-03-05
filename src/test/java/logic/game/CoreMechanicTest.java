@@ -12,17 +12,17 @@ import objects.items.RobuxGiftCard;
 import org.junit.jupiter.api.Test;
 
 /**
- * ทดสอบกลไกหลัก (core mechanics) ระหว่างคลาสต่างๆ
- * ครอบคลุม: เริ่มด่าน, โจมตีศัตรู (Extrovert, TA), เก็บไอเทม (Caffeine, Parabola, RobuxGiftCard)
+ * Tests core mechanics (interactions between different classes).
+ * Covers: starting a level, attacking enemies (Extrovert, TA), picking up items (Caffeine, Parabola, RobuxGiftCard).
  *
- * เหตุผล: เป็น integration test ระดับ unit ที่ตรวจว่า Player + Enemy/Item
- * ทำงานร่วมกันถูกต้องตามกติกาเกม
+ * Reason: This is a unit-level integration test that verifies Player + Enemy/Item
+ * work together correctly according to the game rules.
  */
 class CoreMechanicTest {
 
     @Test
     void startingLevelShouldUseConfigHealth() {
-        // ตรวจว่า startLevel ใช้ HP จาก LevelConfig (ISCALE_403 = 5 HP, 20 Stamina)
+        // Verify startLevel uses HP from LevelConfig (ISCALE_403 = 5 HP, 20 Stamina)
         GameSession session = new GameSession();
 
         session.startLevel(LevelId.ISCALE_403);
@@ -34,6 +34,7 @@ class CoreMechanicTest {
 
     @Test
     void attackingExtrovertShouldApplyPenalty() {
+        // Extrovert interaction: player loses 3 HP and 1 stamina, extrovert is deactivated
         Player player = new Player(5, 10, 0, 0);
         Extrovert extrovert = new Extrovert(1, 0);
 
@@ -46,6 +47,7 @@ class CoreMechanicTest {
 
     @Test
     void pickingCaffeineShouldIncreaseStaminaByTwo() {
+        // Caffeine item grants +2 stamina and is consumed
         Player player = new Player(5, 7, 0, 0);
         Caffeine caffeine = new Caffeine(1, 1);
 
@@ -57,6 +59,7 @@ class CoreMechanicTest {
 
     @Test
     void pickingParabolaShouldIncreaseHealthByTwo() {
+        // Parabola item heals +2 HP and is consumed
         Player player = new Player(5, 7, 0, 0);
         player.setHealth(2);
         Parabola parabola = new Parabola(1, 1);
@@ -69,6 +72,7 @@ class CoreMechanicTest {
 
     @Test
     void pickingRobuxGiftCardShouldDecreaseStaminaByOne() {
+        // RobuxGiftCard is a trap item: costs 1 stamina and is consumed
         Player player = new Player(5, 7, 0, 0);
         RobuxGiftCard robuxGiftCard = new RobuxGiftCard(1, 1);
 
@@ -80,6 +84,7 @@ class CoreMechanicTest {
 
     @Test
     void taCollisionAtFullHealthShouldReducePlayerToOneAndRemainActive() {
+        // TA at full HP: reduces player to 1 HP, TA stays active (not killable)
         Player player = new Player(5, 10, 0, 0);
         TA ta = new TA(1, 0);
 
@@ -91,6 +96,7 @@ class CoreMechanicTest {
 
     @Test
     void taCollisionAtNotFullHealthShouldDefeatPlayerAndRemainActive() {
+        // TA when player is not full HP: instantly kills the player, TA stays active
         Player player = new Player(5, 10, 0, 0);
         player.setHealth(4);
         TA ta = new TA(1, 0);

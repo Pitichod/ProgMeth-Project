@@ -6,19 +6,19 @@ import org.junit.jupiter.api.Test;
 import rewards.*;
 
 /**
- * ทดสอบ LevelConfig ที่กำหนดค่าเริ่มต้น (HP, Stamina, Reward) ของแต่ละด่าน
+ * Tests LevelConfig which defines the initial values (HP, Stamina, Reward) for each level.
  *
- * เหตุผล: ค่าเหล่านี้กระทบ game balance โดยตรง
- * การเปลี่ยน config ผิดจะทำให้ด่านง่ายหรือยากเกินไป
- * หรือให้รางวัลผิดตัวเมื่อผ่านด่าน
+ * Reason: These values directly affect game balance.
+ * A wrong config could make a level too easy or too hard,
+ * or award the wrong reward upon completion.
  */
 class LevelConfigTest {
 
-    // --- ตรวจ config ของแต่ละด่าน ---
+    // --- Verify config for each level ---
 
     @Test
     void level401ShouldHaveCorrectConfig() {
-        // ด่าน 1: HP 10, Stamina 15, รางวัล Glasses
+        // Level 1: HP 10, Stamina 15, reward Glasses
         LevelConfig cfg = LevelConfig.fromLevel(LevelId.ISCALE_401);
         assertEquals(LevelId.ISCALE_401, cfg.getLevelId());
         assertEquals(10, cfg.getDefaultHealth());
@@ -28,7 +28,7 @@ class LevelConfigTest {
 
     @Test
     void level402ShouldHaveCorrectConfig() {
-        // ด่าน 2: HP 5, Stamina 15, รางวัล Notebook
+        // Level 2: HP 5, Stamina 15, reward Notebook
         LevelConfig cfg = LevelConfig.fromLevel(LevelId.ISCALE_402);
         assertEquals(5, cfg.getDefaultHealth());
         assertEquals(15, cfg.getDefaultStamina());
@@ -37,7 +37,7 @@ class LevelConfigTest {
 
     @Test
     void level403ShouldHaveCorrectConfig() {
-        // ด่าน 3: HP 5, Stamina 20, รางวัล Mouse
+        // Level 3: HP 5, Stamina 20, reward Mouse
         LevelConfig cfg = LevelConfig.fromLevel(LevelId.ISCALE_403);
         assertEquals(5, cfg.getDefaultHealth());
         assertEquals(20, cfg.getDefaultStamina());
@@ -46,7 +46,7 @@ class LevelConfigTest {
 
     @Test
     void level404ShouldHaveCorrectConfig() {
-        // ด่าน 4: HP 5, Stamina 15, รางวัล Backpack
+        // Level 4: HP 5, Stamina 15, reward Backpack
         LevelConfig cfg = LevelConfig.fromLevel(LevelId.ISCALE_404);
         assertEquals(5, cfg.getDefaultHealth());
         assertEquals(15, cfg.getDefaultStamina());
@@ -55,18 +55,18 @@ class LevelConfigTest {
 
     @Test
     void level405ShouldHaveCorrectConfig() {
-        // ด่าน 5: HP 10, Stamina 100, รางวัล ChatGPTPro (ด่านสุดท้ายให้ stamina มากสุด)
+        // Level 5: HP 10, Stamina 100, reward ChatGPTPro (final level grants max stamina)
         LevelConfig cfg = LevelConfig.fromLevel(LevelId.ISCALE_405);
         assertEquals(10, cfg.getDefaultHealth());
         assertEquals(100, cfg.getDefaultStamina());
         assertInstanceOf(ChatGPTPro.class, cfg.getReward());
     }
 
-    // --- ตรวจ getter ทั่วไป ---
+    // --- Verify general getters ---
 
     @Test
     void customConstructorShouldSetAllFields() {
-        // ตรวจว่า constructor กำหนดค่าได้ถูกสำหรับกรณี custom
+        // Verify that the constructor sets all fields correctly for custom configs
         Glasses reward = new Glasses();
         LevelConfig cfg = new LevelConfig(LevelId.ISCALE_401, 7, 12, reward);
         assertEquals(LevelId.ISCALE_401, cfg.getLevelId());

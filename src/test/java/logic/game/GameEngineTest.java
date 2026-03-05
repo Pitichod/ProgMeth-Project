@@ -7,19 +7,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * ทดสอบ GameEngine ซึ่งเป็น controller หลักของ gameplay ทั้งหมด
- * ครอบคลุม: เดิน, ชนกำแพง, ดันเก้าอี้, เหยียบสาย, เก็บไอเทม,
- *           สู้ศัตรู, ผ่านด่าน, restart, สถานะข้อความ
+ * Tests GameEngine, the main controller for all gameplay.
+ * Covers: walking, wall collision, pushing chairs, stepping on cables, picking up items,
+ *         fighting enemies, level completion, restart, and status messages.
  *
- * เหตุผล: GameEngine ประสานงานระหว่าง Player, GameBoard, GameSession
- * เป็นจุดที่ข้อผิดพลาดจะกระทบผู้เล่นโดยตรง
+ * Reason: GameEngine coordinates Player, GameBoard, and GameSession.
+ * Bugs here directly impact the player experience.
  *
- * ใช้แผนที่ทดสอบขนาดเล็กเพื่อให้ควบคุมตำแหน่งวัตถุได้แม่นยำ
+ * Uses small test maps to precisely control object positions.
  */
 class GameEngineTest {
 
     // ===================================================================
-    //  helper: สร้าง engine จากแผนที่จริงของด่าน 1 (มี obstacle/enemy/item)
+    //  Helper: create engine from real level-1 map (has obstacles/enemies/items)
     // ===================================================================
     private GameSession session;
 
@@ -28,11 +28,11 @@ class GameEngineTest {
         session = new GameSession();
     }
 
-    // --- การเดินพื้นฐาน ---
+    // --- Basic Movement ---
 
     @Test
     void moveShouldChangePlayerPosition() {
-        // ผู้เล่นเดินไปช่องว่างได้ ตำแหน่งต้องเปลี่ยน
+        // Moving to an empty tile should change the player's position
         GameEngine engine = new GameEngine(session, LevelId.ISCALE_401);
         int startX = engine.getPlayer().getX();
         int startY = engine.getPlayer().getY();
@@ -45,7 +45,7 @@ class GameEngineTest {
 
     @Test
     void moveShouldConsumeOneStamina() {
-        // เดินปกติ 1 ก้าวใช้ stamina 1
+        // A normal step costs exactly 1 stamina
         GameEngine engine = new GameEngine(session, LevelId.ISCALE_401);
         int before = engine.getPlayer().getStamina();
 
@@ -56,53 +56,53 @@ class GameEngineTest {
 
     @Test
     void moveIntoWallShouldNotChangePosition() {
-        // เดินชนกำแพงต้องไม่ขยับ
+        // Walking into a wall must not change position
         GameEngine engine = new GameEngine(session, LevelId.ISCALE_401);
         int startX = engine.getPlayer().getX();
         int startY = engine.getPlayer().getY();
 
-        engine.move(Direction.LEFT); // ด่าน 1 ผู้เล่นอยู่ใกล้ขอบซ้าย
+        engine.move(Direction.LEFT); // Level 1 player is near the left edge
 
-        // ถ้าเจอกำแพงตำแหน่งต้องเท่าเดิม
+        // If blocked, position must remain unchanged
         assertTrue(engine.getStatusMessage().contains("Blocked") ||
                    engine.getPlayer().getX() == startX);
     }
 
     @Test
     void moveIntoWallShouldNotConsumeStamina() {
-        // ชนกำแพงต้องไม่เสีย stamina
+        // Hitting a wall must not consume stamina
         GameEngine engine = new GameEngine(session, LevelId.ISCALE_401);
         int before = engine.getPlayer().getStamina();
 
         engine.move(Direction.UP); // row 0 = wall
 
-        // ถ้า blocked stamina ต้องเท่าเดิม
+        // If blocked, stamina must remain the same
         if (engine.getStatusMessage().contains("Blocked")) {
             assertEquals(before, engine.getPlayer().getStamina());
         }
     }
 
-    // --- ด่าน สถานะ completed ---
+    // --- Level Completion State ---
 
     @Test
     void engineShouldNotBeCompletedInitially() {
-        // เริ่มเกมต้องยังไม่ completed
+        // A newly created engine must not be in the completed state
         GameEngine engine = new GameEngine(session, LevelId.ISCALE_401);
         assertFalse(engine.isCompleted());
     }
 
     @Test
     void statusMessageShouldHaveDefaultText() {
-        // ข้อความเริ่มต้นต้องไม่ null
+        // The initial status message must not be null
         GameEngine engine = new GameEngine(session, LevelId.ISCALE_401);
         assertNotNull(engine.getStatusMessage());
     }
 
-    // --- stale states ---
+    // --- Stale States ---
 
     @Test
     void moveWhenOutOfStaminaShouldBlock() {
-        // stamina หมดต้องเดินไม่ได้
+        // Player cannot move when stamina is 0
         GameEngine engine = new GameEngine(session, LevelId.ISCALE_401);
         engine.getPlayer().setStamina(0);
         int startX = engine.getPlayer().getX();
@@ -115,7 +115,7 @@ class GameEngineTest {
 
     @Test
     void moveWhenDeadShouldBlock() {
-        // HP = 0 ต้องเดินไม่ได้
+        // Player cannot move when HP = 0
         GameEngine engine = new GameEngine(session, LevelId.ISCALE_401);
         engine.getPlayer().setHealth(0);
 
@@ -126,18 +126,16 @@ class GameEngineTest {
 
     @Test
     void moveWhenCompletedShouldBlock() {
-        // ด่านเสร็จแล้วต้องเดินไม่ได้
+        // Player cannot move after level is completed
         GameEngine engine = new GameEngine(session, LevelId.ISCALE_401);
-        // walk player to door to trigger completion (simulate quick completion)
-        // instead, just verify the guard:
-        // complete manually is hard without walking to door, so we test the guard via restart
+        // Walking to the door to trigger completion is complex, so we verify the guard via restart
     }
 
-    // --- restart ---
+    // --- Restart ---
 
     @Test
     void restartShouldResetPositionAndStatus() {
-        // restart ต้องรีเซ็ตตำแหน่ง, stamina, completed
+        // Restart must reset position, stamina, and completed flag
         GameEngine engine = new GameEngine(session, LevelId.ISCALE_401);
         int startX = engine.getPlayer().getX();
 
@@ -151,7 +149,7 @@ class GameEngineTest {
 
     @Test
     void restartShouldResetPlayerHealth() {
-        // restart ต้องรีเซ็ต HP กลับค่าเริ่มต้นของด่าน
+        // Restart must restore HP to the level's default value
         GameEngine engine = new GameEngine(session, LevelId.ISCALE_401);
         engine.getPlayer().takeDamage(3);
 
@@ -160,18 +158,18 @@ class GameEngineTest {
         assertEquals(engine.getMaxHealth(), engine.getPlayer().getHealth());
     }
 
-    // --- level labels / navigation ---
+    // --- Level Labels / Navigation ---
 
     @Test
     void levelLabelShouldContainLevelNumber() {
-        // label ต้องมีชื่อด่าน
+        // The label must include the level number
         GameEngine engine = new GameEngine(session, LevelId.ISCALE_403);
         assertTrue(engine.getLevelLabel().contains("403"));
     }
 
     @Test
     void nextLevelIdShouldReturnCorrectSequence() {
-        // ด่านถัดไปต้องเรียงลำดับ 401→402→…→405→null
+        // Next level must follow order: 401->402->...->405->null
         GameEngine e1 = new GameEngine(session, LevelId.ISCALE_401);
         assertEquals(LevelId.ISCALE_402, e1.getNextLevelId());
 
@@ -182,7 +180,7 @@ class GameEngineTest {
 
     @Test
     void mapResourceShouldReturnCorrectPath() {
-        // path ต้องตรงกับไฟล์ map จริง
+        // Path must match the actual map file
         GameEngine engine = new GameEngine(session, LevelId.ISCALE_402);
         assertEquals("/maps/iscale_402.txt", engine.getMapResource());
     }
@@ -191,14 +189,14 @@ class GameEngineTest {
 
     @Test
     void maxHealthShouldMatchLevelConfig() {
-        // maxHealth ต้องตรงกับ config ของด่าน
+        // maxHealth must match the level's config
         GameEngine engine = new GameEngine(session, LevelId.ISCALE_405);
         assertEquals(10, engine.getMaxHealth());
     }
 
     @Test
     void maxStaminaShouldMatchLevelConfig() {
-        // maxStamina ต้องตรงกับ config ของด่าน
+        // maxStamina must match the level's config
         GameEngine engine = new GameEngine(session, LevelId.ISCALE_405);
         assertEquals(100, engine.getMaxStamina());
     }
@@ -207,7 +205,7 @@ class GameEngineTest {
 
     @Test
     void moveShouldUpdatePlayerFacingDirection() {
-        // ทุกครั้งที่เดิน ทิศที่หันต้องอัปเดต (ใช้เลือก sprite)
+        // Every move must update the facing direction (used for sprite selection)
         GameEngine engine = new GameEngine(session, LevelId.ISCALE_401);
         engine.move(Direction.RIGHT);
         assertEquals(Direction.RIGHT, engine.getPlayer().getLastDirection());
