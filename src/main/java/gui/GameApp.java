@@ -780,21 +780,23 @@ public class GameApp extends Application {
         exit.setOnAction(e -> showStartScene());
         applyHoverEffect(exit);
 
-        HBox bottom = new HBox(12, again, exit);
-        bottom.setAlignment(Pos.CENTER);
-        bottom.setPadding(new Insets(12));
+        HBox buttonRow = new HBox(12, again, exit);
+        buttonRow.setAlignment(Pos.CENTER);
+        buttonRow.setTranslateY(80);
 
-        StackPane centerPane = new StackPane(pageView);
+        StackPane imageWithButtons = new StackPane(pageView, buttonRow);
+        imageWithButtons.setAlignment(Pos.CENTER);
+        StackPane.setAlignment(buttonRow, Pos.BOTTOM_CENTER);
+
+        StackPane centerPane = new StackPane(imageWithButtons);
         centerPane.setAlignment(Pos.CENTER);
 
         BorderPane root = new BorderPane();
         root.setCenter(centerPane);
-        root.setBottom(bottom);
         root.setStyle("-fx-background-color: #FFFFFF;");
 
         Scene scene = new Scene(root, currentWidth(), currentHeight());
         stage.setScene(scene);
-        // keep image centered and limit size so it does not fill the whole window
         pageView.fitWidthProperty().bind(scene.widthProperty().multiply(0.6));
         pageView.fitHeightProperty().bind(scene.heightProperty().multiply(0.6));
     }
