@@ -1,1 +1,0 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"application"},{"l":"gui"},{"l":"interfaces"},{"l":"logic.components"},{"l":"logic.game"},{"l":"objects"},{"l":"objects.items"},{"l":"objects.obstacles"},{"l":"rewards"}];updateSearchResults();

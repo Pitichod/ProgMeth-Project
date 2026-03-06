@@ -4,6 +4,7 @@ build/*
 !build/distributions/
 !build/scripts/
 !build/docs/
+plantuml.jar
 
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
